@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Категории — КиноКаталог</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html">
+      <span class="brand__name">Кино<span>Каталог</span></span>
+      <span class="brand__sub">категории · оценки · теги · актеры</span>
+    </a>
+    <div class="topbar__links">
+      <a href="../catalog/index.html">Каталог</a>
+      <a href="index.html" class="active">Категории</a>
+      <a href="../actors/index.html">Актеры</a>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <nav class="crumbs" aria-label="Хлебные крошки">
+    <a href="../index.html">Главная</a><span class="crumbs__sep">/</span>
+    <a href="../catalog/index.html">Каталог</a><span class="crumbs__sep">/</span>
+    <span class="crumbs__current">Категории</span>
+  </nav>
+
+  <section class="hero">
+    <h1 class="hero__title">Категории</h1>
+    <p class="hero__text" id="heroSummary"></p>
+  </section>
+
+  <div id="panels"></div>
+</main>
+
+<footer class="footer">
+  <p>КиноКаталог · данные: <code>data/movies.js</code></p>
+</footer>
+
+<script src="../data/movies.js"></script>
+<script src="../shared/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

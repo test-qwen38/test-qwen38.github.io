@@ -1,0 +1,64 @@
+ul.category-list {
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+li.category-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+li.category-item a {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow .15s, transform .15s;
+}
+
+li.category-item a:hover {
+  box-shadow: 0 4px 12px rgba(47, 128, 237, .12);
+  transform: translateY(-1px);
+  border-color: #bcd4f5;
+}
+
+.category-name { font-size: 16px; font-weight: 600; }
+
+.category-count {
+  background: #eaf2fd;
+  color: #2f80ed;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.inline-rename-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.inline-rename-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+}
+
+.inline-rename-form input:focus { border-color: #2f80ed; }
+
+form.inline-rename-form button {
+  width: auto;
+  padding: 8px 14px;
+}

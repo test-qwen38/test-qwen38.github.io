@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Каталог — КиноКаталог</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="../index.html">
+      <span class="brand__name">Кино<span>Каталог</span></span>
+      <span class="brand__sub">категории · оценки · теги · актеры</span>
+    </a>
+    <div class="topbar__links">
+      <a href="index.html" class="active">Каталог</a>
+      <a href="../categories/index.html">Категории</a>
+      <a href="../actors/index.html">Актеры</a>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <section class="hero">
+    <h1 class="hero__title">Каталог фильмов</h1>
+    <p class="hero__text" id="heroSummary"></p>
+  </section>
+
+  <section class="toolbar" aria-label="Поиск и фильтры">
+    <div class="search">
+      <span class="search__icon" aria-hidden="true">⌕</span>
+      <input type="search" id="searchInput" placeholder="Поиск по названию, актеру, тегу…" autocomplete="off">
+    </div>
+    <div class="sort">
+      <label class="visually-hidden" for="sortSelect">Сортировка</label>
+      <select id="sortSelect">
+        <option value="rating">По рейтингу</option>
+        <option value="year-desc">Сначала новые</option>
+        <option value="year-asc">Сначала старые</option>
+        <option value="title">По алфавиту</option>
+      </select>
+    </div>
+  </section>
+
+  <div class="filters" id="filters" aria-label="Фильтры"></div>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<footer class="footer">
+  <p>Каталог films · данные: <code>data/movies.js</code></p>
+</footer>
+
+<script src="../data/movies.js"></script>
+<script src="../shared/ui.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

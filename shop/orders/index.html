@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Мои заказы</title>
+  <link rel="stylesheet" href="../common/css/base.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="site-nav container"></nav>
+
+  <div class="container">
+    <header class="page-header">
+      <h1>Мои заказы</h1>
+      <p class="orders-summary" id="ordersSummary"></p>
+    </header>
+
+    <div class="filters orders-filters">
+      <input type="search" id="searchInput" placeholder="Поиск по товару или имени...">
+      <select id="statusFilter" aria-label="Фильтр по статусу">
+        <option value="all">Все статусы</option>
+        <option value="new">Новые</option>
+        <option value="processing">В обработке</option>
+        <option value="done">Выполненные</option>
+      </select>
+    </div>
+
+    <ul class="orders-list" id="ordersList"></ul>
+    <p class="empty-state hidden" id="noOrders">Заказов пока нет — самое время что-нибудь выбрать в каталоге.</p>
+    <a target="_top" href="../categories/index.html" id="goCatalog" class="btn-submit orders-cta hidden">Перейти к категориям</a>
+  </div>
+
+  <script src="../common/js/auth.js"></script>
+  <script src="../common/js/nav.js"></script>
+  <script src="../common/js/storage.js"></script>
+  <script src="../common/js/utils.js"></script>
+  <script src="js/status.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>

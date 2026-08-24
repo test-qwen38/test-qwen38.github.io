@@ -1,0 +1,234 @@
+.breadcrumb { margin-bottom: 16px; }
+
+.back-link {
+  color: #2f80ed;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+.catalog-header h1 { font-size: 30px; margin-bottom: 6px; }
+
+.catalog-subtitle { color: #7f8c9b; font-size: 15px; }
+
+.filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.filters input {
+  width: 280px;
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+.filters input:focus { border-color: #2f80ed; }
+
+.type-buttons { display: flex; gap: 8px; }
+
+.chip {
+  padding: 8px 16px;
+  border: 1px solid #dfe6e9;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+
+.chip:hover { border-color: #2f80ed; }
+
+.chip.active {
+  background: #2f80ed;
+  border-color: #2f80ed;
+  color: #fff;
+}
+
+ul.product-grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+li.product-card {
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow .15s, transform .15s;
+}
+
+li.product-card:hover {
+  box-shadow: 0 4px 12px rgba(47, 128, 237, .12);
+  transform: translateY(-2px);
+}
+
+.product-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.product-header .item-actions {
+  margin-left: 0;
+  gap: 5px;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s, transform .15s;
+  color: #7f8c9b;
+}
+
+.icon-btn:hover {
+  transform: scale(1.08);
+}
+
+.icon-edit {
+  color: #2f80ed;
+  border-color: #d4e4fa;
+}
+
+.icon-edit:hover {
+  background: #eaf2fd;
+  border-color: #2f80ed;
+  color: #1a5fc9;
+}
+
+.icon-del {
+  color: #e74c3c;
+  border-color: #fadbd8;
+}
+
+.icon-del:hover {
+  background: #fdf2f0;
+  border-color: #e74c3c;
+  color: #c0392b;
+}
+
+.product-badge {
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.badge-goods { background: #e7f8ef; color: #1d9d54; }
+
+.badge-service { background: #fdf0e2; color: #c47a18; }
+
+.product-name { font-size: 16px; font-weight: 600; line-height: 1.35; }
+
+.product-desc {
+  font-size: 13px;
+  color: #7f8c9b;
+  flex-grow: 1;
+}
+
+.product-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; }
+
+.product-price { font-size: 17px; font-weight: 700; color: #1d2b3a; white-space: nowrap; }
+
+.btn-buy {
+  padding: 8px 14px;
+  background: #2f80ed;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.btn-buy:hover { background: #1e6fd9; }
+
+.btn-add-item {
+  padding: 8px 18px;
+  background: #2f80ed;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .15s;
+}
+
+.btn-add-item:hover {
+  background: #1e6fd9;
+  transform: translateY(-1px);
+}
+
+.item-form-wrap {
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.item-form-section { display: none; }
+.item-form-section.hidden { display: none; }
+
+.form-inline { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+
+.form-inline .field {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-inline .field > span { font-size: 13px; font-weight: 500; color: #2d3436; }
+
+.form-inline input,
+.form-inline select {
+  padding: 10px 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-inline input:focus,
+.form-inline select:focus { border-color: #2f80ed; }
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.form-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 6px 0;
+}
+
+.hidden { display: none !important; }

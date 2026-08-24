@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Онлайн магазин</title>
+  <link rel="stylesheet" href="../common/css/base.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="login-body">
+  <main class="login-wrap">
+    <div class="login-card">
+      <p class="site-logo login-logo">Онлайн магазин</p>
+      <h1>Вход в систему</h1>
+      <form id="loginForm" novalidate>
+        <label class="field">
+          <span>Имя пользователя *</span>
+          <input type="text" name="username" id="usernameInput" autocomplete="off" required placeholder="user или admin">
+        </label>
+
+        <label class="field">
+          <span>Пароль *</span>
+          <input type="password" name="password" id="passwordInput" autocomplete="current-password" required placeholder="Введите пароль">
+        </label>
+
+        <p class="form-error hidden" id="loginError"></p>
+        <button type="submit" class="btn-submit btn-login">Войти</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="../common/js/auth.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог</title>
+  <link rel="stylesheet" href="../common/css/base.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="site-nav container"></nav>
+
+  <div class="container">
+    <nav class="breadcrumb">
+      <a href="../categories/index.html" target="_top" class="back-link">&larr; Все категории</a>
+    </nav>
+
+    <header class="catalog-header">
+      <h1 id="categoryTitle">Каталог</h1>
+      <p class="catalog-subtitle" id="itemsCount"></p>
+    </header>
+
+    <section class="item-form-wrap hidden">
+      <form id="itemForm" class="form-inline">
+        <div class="field">
+          <label><span>Название *</span></label>
+          <input type="text" name="name" id="itemName" maxlength="80" required>
+        </div>
+        <div class="field">
+          <label><span>Тип *</span></label>
+          <select name="type" id="itemType" required>
+            <option value="">Выберите...</option>
+            <option value="Товар">Товар</option>
+            <option value="Услуга">Услуга</option>
+          </select>
+        </div>
+        <div class="field">
+          <label><span>Цена *</span></label>
+          <input type="number" name="price" id="itemPrice" min="1" step="0.01" required>
+        </div>
+        <div class="field">
+          <label><span>Описание</span></label>
+          <input type="text" name="desc" id="itemDesc" maxlength="255">
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-submit btn-sm">Записать</button>
+          <button type="button" class="btn-ghost btn-sm cancel-form">Отмена</button>
+        </div>
+      </form>
+      <p class="form-error hidden" id="itemFormError"></p>
+    </section>
+
+    <div class="filters">
+      <input type="search" id="filterInput" placeholder="Поиск по названию...">
+      <div class="type-buttons" role="group" aria-label="Фильтр по типу">
+        <button class="chip active" data-type="all">Все</button>
+        <button class="chip" data-type="Товар">Товары</button>
+        <button class="chip" data-type="Услуга">Услуги</button>
+      </div>
+      <button type="button" class="btn-add-item btn-sm">+ Добавить</button>
+    </div>
+
+    <ul class="product-grid" id="productGrid"></ul>
+    <p class="empty-state" id="emptyState">Ничего не найдено</p>
+  </div>
+
+  <script src="../common/js/auth.js"></script>
+  <script src="../common/js/nav.js"></script>
+  <script src="../common/js/data.js"></script>
+  <script src="../common/js/cart.js"></script>
+  <script src="../common/js/utils.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

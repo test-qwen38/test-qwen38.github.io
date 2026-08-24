@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заказ</title>
+  <link rel="stylesheet" href="../common/css/base.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="site-nav container"></nav>
+
+  <div class="container">
+    <nav class="breadcrumb">
+      <a target="_top" href="index.html" class="back-link">&larr; Все заказы</a>
+    </nav>
+
+    <h1 id="orderTitle">Заказ</h1>
+
+    <div class="order-detail-layout" id="detailContent">
+      <section class="detail-block">
+        <h2>Позиция заказа</h2>
+        <dl id="itemDetails"></dl>
+        <p id="commentBlock" class="comment-block hidden"></p>
+      </section>
+
+      <aside class="detail-block order-status-block">
+        <h2>Статус</h2>
+        <div id="statusBadgeSlot"></div>
+        <ul class="order-timeline" id="timeline"></ul>
+        <div class="status-buttons" id="statusButtons"></div>
+      </aside>
+
+      <section class="detail-block customer-block">
+        <h2>Покупатель</h2>
+        <dl id="customerDetails"></dl>
+      </section>
+    </div>
+
+    <p class="empty-state hidden" id="notFound">Заказ не найден.</p>
+  </div>
+
+  <script src="../common/js/auth.js"></script>
+  <script src="../common/js/nav.js"></script>
+  <script src="../common/js/storage.js"></script>
+  <script src="../common/js/utils.js"></script>
+  <script src="js/status.js"></script>
+  <script src="js/order-detail.js"></script>
+</body>
+</html>

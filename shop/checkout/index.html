@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оформление заказа</title>
+  <link rel="stylesheet" href="../common/css/base.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="site-nav container"></nav>
+
+  <div class="container checkout-container">
+    <nav class="breadcrumb">
+      <a id="backLink" target="_top" href="../catalog/index.html">&larr; Назад в каталог</a>
+    </nav>
+
+    <h1>Оформление заказа</h1>
+
+    <div id="errorState" class="checkout-error hidden">
+      <p>Корзина пуста — добавьте товары в каталоге.</p>
+      <a target="_top" href="../categories/index.html">Перейти к категориям</a>
+    </div>
+
+    <div class="checkout-layout" id="checkoutForm">
+      <section class="form-section">
+        <h2>Данные покупателя</h2>
+        <form id="orderForm" novalidate>
+          <label class="field">
+            <span>Имя *</span>
+            <input type="text" name="name" required minlength="2" placeholder="Как к вам обращаться">
+          </label>
+
+          <label class="field">
+            <span>Телефон *</span>
+            <input type="tel" name="phone" required pattern="\+?[0-9\s\-()]{10,18}" placeholder="+7 900 000-00-00">
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" placeholder="Для подтверждения на электронную почту">
+          </label>
+
+          <label class="field">
+            <span id="extraLabel">Комментарий к заказу</span>
+            <textarea name="comment" rows="3" placeholder="Например: удобное время доставки, способ оплаты"></textarea>
+          </label>
+
+          <div class="agreement">
+            <label class="checkbox-field">
+              <input type="checkbox" id="agreeCheckbox" required>
+              <span>Согласен на обработку персональных данных</span>
+            </label>
+          </div>
+
+          <p class="form-error hidden" id="formError"></p>
+          <button type="submit" class="btn-submit">Подтвердить заказ</button>
+        </form>
+      </section>
+
+      <aside class="summary-section">
+        <h2>Ваш заказ</h2>
+        <ul class="cart-lines" id="cartLines"></ul>
+
+        <div class="total-row">
+          <span>Итого:</span>
+          <strong id="totalPrice"></strong>
+        </div>
+      </aside>
+    </div>
+
+    <div id="successState" class="checkout-success hidden">
+      <div class="success-icon">&#10003;</div>
+      <h2>Заказ оформлен!</h2>
+      <p id="successText"></p>
+      <a target="_top" href="../orders/index.html" class="btn-submit btn-primary">Мои заказы</a>
+    </div>
+  </div>
+
+  <script src="../common/js/auth.js"></script>
+  <script src="../common/js/nav.js"></script>
+  <script src="../common/js/storage.js"></script>
+  <script src="../common/js/data.js"></script>
+  <script src="../common/js/cart.js"></script>
+  <script src="../common/js/utils.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

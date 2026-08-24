@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EC Ключи — Генерация, Подпись, Верификация</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  h2 { font-size: 15px; margin: 22px 0 10px; color: #4ecca3; }
+  .status {
+    margin-top: 14px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    display: none;
+  }
+  .status.ok  { display: block; background: rgba(78,204,163,.15); color: #4ecca3; border: 1px solid #4ecca3; }
+  .status.bad { display: block; background: rgba(240,80,80,.15); color: #f05050; border: 1px solid #f05050; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>EC — Эллиптические кривые</h1>
+
+    <h2>1. Генерация пары ключей (P-256 / secp256r1, ECDSA)</h2>
+    <button onclick="genKeys()" id="btnGen">Сгенерировать ключи</button>
+    <div class="row">
+      <button class="ghost" onclick="copyEl('pubJwk'); copyBtn(this)">Копировать публичный</button>
+      <button class="ghost" onclick="copyEl('privJwk'); copyBtn(this)">Копировать приватный</button>
+      <button class="ghost" onclick="clearAll()">Сбросить всё</button>
+    </div>
+    <div class="result" id="pubJwk" style="margin-top:10px">— публичный ключ (JWK) —</div>
+    <div class="result" id="privJwk">— приватный ключ (JWK) —</div>
+
+    <h2>2. Подпись сообщения (ECDSA / SHA-256)</h2>
+    <textarea id="input" placeholder="Введите текст для подписи..."></textarea>
+    <div class="row">
+      <button onclick="signMsg()" id="btnSign" disabled>Подписать</button>
+      <button class="ghost" onclick="copyEl('sigOut'); copyBtn(this)" id="btnCopySig" disabled>Копировать подпись</button>
+    </div>
+    <div class="result" id="sigOut">— подпись (base64url) —</div>
+
+    <h2>3. Верификация</h2>
+    <textarea id="verifyText" placeholder="Текст, который нужно проверить..."></textarea>
+    <textarea id="verifySig" placeholder="Подпись для проверки (base64url)..."></textarea>
+    <div class="row">
+      <button onclick="verifyMsg()" id="btnVerify" disabled>Проверить</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <div class="info">
+      Алгоритм: ECDSA (P-256) + SHA-256 через Web Crypto API (crypto.subtle).<br>
+      Ключи хранятся только в памяти страницы (экспортируются в виде JWK при копировании).
+    </div>
+  </div>
+<script src="common.js"></script>
+<script>
+  let keyPair = null;
+
+  async function genKeys() {
+    keyPair = await crypto.subtle.generateKey(
+      { name: 'ECDSA', namedCurve: 'P-256' },
+      true,
+      ['sign', 'verify']
+    );
+    document.getElementById('btnSign').disabled = false;
+    document.getElementById('btnVerify').disabled = false;
+    showJwk();
+  }
+
+  async function showJwk() {
+    const pub = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+    const priv = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+    document.getElementById('pubJwk').textContent = JSON.stringify(pub, null, 2);
+    document.getElementById('privJwk').textContent = JSON.stringify(priv, null, 2);
+  }
+
+  async function signMsg() {
+    const text = document.getElementById('input').value;
+    if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
+    const sig = await crypto.subtle.sign(
+      { name: 'ECDSA', hash: 'SHA-256' },
+      keyPair.privateKey,
+      new TextEncoder().encode(text)
+    );
+    document.getElementById('sigOut').textContent = b64url(sig);
+    document.getElementById('verifySig').value = b64url(sig);
+    flashButton(document.getElementById('btnSign'), 'Подписано!');
+  }
+
+  async function verifyMsg() {
+    const status = document.getElementById('status');
+    status.className = 'status';
+    if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
+    const text = document.getElementById('verifyText').value;
+    const sigB64 = document.getElementById('verifySig').value.trim();
+    if (!text && !sigB64) { alert('Введите текст и подпись'); return; }
+    try {
+      const ok = await crypto.subtle.verify(
+        { name: 'ECDSA', hash: 'SHA-256' },
+        keyPair.publicKey,
+        b64urlDecode(sigB64),
+        new TextEncoder().encode(text)
+      );
+      status.className = 'status ' + (ok ? 'ok' : 'bad');
+      status.textContent = ok
+        ? 'Подпись ВЕРНА — сообщение подлинно'
+        : 'Подпись НЕВЕРНА — подпись не соответствует тексту или ключу';
+    } catch (e) {
+      status.className = 'status bad';
+      status.textContent = 'Ошибка верификации: ' + e.message;
+    }
+  }
+
+  async function copyEl(id) {
+    const text = document.getElementById(id).textContent;
+    if (text.startsWith('—')) return;
+    await copyToClipboard(text);
+  }
+
+  function copyBtn(btn) {
+    flashButton(btn);
+  }
+
+  function clearAll() {
+    keyPair = null;
+    ['input', 'verifyText', 'verifySig'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pubJwk').textContent = '— публичный ключ (JWK) —';
+    document.getElementById('privJwk').textContent = '— приватный ключ (JWK) —';
+    document.getElementById('sigOut').textContent = '— подпись (base64url) —';
+    document.getElementById('status').className = 'status';
+    document.getElementById('btnSign').disabled = true;
+    document.getElementById('btnVerify').disabled = true;
+  }
+</script>
+</body>
+</html>

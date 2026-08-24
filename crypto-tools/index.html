@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Krypto — Инструменты шифрования</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .card { max-width: 520px; text-align: center; padding: 40px 30px; }
+  h1 { font-size: 26px; margin-bottom: 8px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 28px; }
+  .tool {
+    display: block;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    background: #0f3460;
+    border: 1px solid #1a4a7a;
+    border-radius: 10px;
+    color: #eee;
+    text-decoration: none;
+    text-align: left;
+    transition: border-color .15s, transform .1s;
+  }
+  .tool:hover { border-color: #4ecca3; transform: translateY(-2px); }
+  .tool b { display: block; font-size: 16px; color: #4ecca3; margin-bottom: 4px; }
+  .tool span { font-size: 13px; color: #bbb; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Krypto</h1>
+    <div class="subtitle">Инструменты шифрования на Web Crypto API</div>
+
+    <a class="tool" href="sha256.html">
+      <b>SHA Генератор</b>
+      <span>SHA-1 / SHA-256 / SHA-384 / SHA-512 в реальном времени</span>
+    </a>
+    <a class="tool" href="ec-keys.html">
+      <b>EC Ключи (P-256)</b>
+      <span>Генерация ключей, подпись и верификация (ECDSA)</span>
+    </a>
+  </div>
+</body>
+</html>

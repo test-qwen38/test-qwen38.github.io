@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Категории</title>
+  <link rel="stylesheet" href="../common/css/base.css">
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <nav class="site-nav container"></nav>
+
+  <div class="container">
+    <header class="page-header">
+      <h1>Категории</h1>
+      <div class="search-box">
+        <input type="search" id="searchInput" placeholder="Поиск категории...">
+      </div>
+    </header>
+
+    <section class="form-inline form-inline-category">
+      <form id="addCategoryForm">
+        <input type="text" id="newNameInput" placeholder="Название новой категории..." maxlength="80">
+        <button type="submit" class="btn-submit btn-sm">Добавить</button>
+      </form>
+      <p class="form-error hidden" id="categoryFormError"></p>
+    </section>
+
+    <ul class="category-list" id="categoryList"></ul>
+    <p class="empty-state" id="emptyState">Ничего не найдено</p>
+  </div>
+
+  <script src="../common/js/auth.js"></script>
+  <script src="../common/js/nav.js"></script>
+  <script src="../common/js/data.js"></script>
+  <script src="../common/js/utils.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>

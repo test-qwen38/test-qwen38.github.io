@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHA Генератор</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .tab {
+    padding: 7px 16px;
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    background: #0f3460;
+    color: #bbb;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .tab.active { background: #4ecca3; color: #16213e; border-color: #4ecca3; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>SHA Генератор</h1>
+    <div class="tabs" id="tabs"></div>
+    <textarea id="input" placeholder="Введите текст для хеширования..."></textarea>
+    <div class="result" id="output">—</div>
+    <div class="row">
+      <button onclick="copyHash(event)">Копировать</button>
+      <button class="ghost" onclick="clearAll()">Очистить</button>
+    </div>
+    <div class="info">Идентификатор строки в символах: <span id="len">0</span></div>
+  </div>
+<script src="common.js"></script>
+<script>
+  const ALGORITHMS = ['SHA-1', 'SHA-256', 'SHA-384', 'SHA-512'];
+  let algorithm = 'SHA-256';
+
+  const input = document.getElementById('input');
+  const output = document.getElementById('output');
+  const len = document.getElementById('len');
+  const tabs = document.getElementById('tabs');
+
+  ALGORITHMS.forEach(name => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (name === algorithm ? ' active' : '');
+    btn.textContent = name;
+    btn.addEventListener('click', () => {
+      algorithm = name;
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+      render();
+    });
+    tabs.appendChild(btn);
+  });
+
+  async function hash(text) {
+    const data = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest(algorithm, data);
+    return Array.from(new Uint8Array(buf))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+  }
+
+  function render() {
+    len.textContent = input.value.length;
+    if (input.value) {
+      hash(input.value).then(h => output.textContent = h);
+    } else {
+      output.textContent = '—';
+    }
+  }
+
+  input.addEventListener('input', render);
+
+  render();
+
+  async function copyHash(e) {
+    if (output.textContent === '—') return;
+    await copyToClipboard(output.textContent);
+    flashButton(e.currentTarget);
+  }
+
+  function clearAll() {
+    input.value = '';
+    output.textContent = '—';
+    len.textContent = '0';
+    input.focus();
+  }
+</script>
+</body>
+</html>

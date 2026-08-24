@@ -1,0 +1,47 @@
+.login-wrap {
+  width: 100%;
+  max-width: 420px;
+  margin: 48px auto 32px;
+  padding: 0 16px;
+}
+
+.login-card {
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  border-radius: 12px;
+  padding: 32px 28px;
+  box-shadow: 0 4px 16px rgba(29, 43, 58, .06);
+}
+
+.login-logo { display: block; text-align: center; margin-bottom: 8px; }
+
+.login-card h1 { font-size: 22px; text-align: center; margin-bottom: 24px; }
+
+.field { display: block; margin-bottom: 16px; }
+
+.field > span {
+  display: block;
+  font-size: 13px;
+  color: #7f8c9b;
+  margin-bottom: 5px;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+}
+
+.field input:focus { border-color: #2f80ed; }
+
+.form-error { margin-bottom: 14px; margin-top: 0; }
+
+.btn-login { width: 100%; display: block; padding: 12px 20px; }
+
+@media (min-width: 760px) {
+  .login-wrap { margin: 8vh auto; }
+}

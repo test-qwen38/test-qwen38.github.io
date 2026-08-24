@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Едущая машиночка</title>
+<style>
+  :root {
+    --speed: 1;          /* множитель скорости (меняется слайдером) */
+    --road-h: 32vh;      /* высота дороги */
+    --sky1: #8ed0f5;     /* небо сверху   */
+    --sky2: #d9f1fb;     /* у горизонта  */
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; overflow: hidden; background: var(--sky1); font-family: system-ui, sans-serif; }
+
+  .scene { position: relative; width: 100%; height: 100vh; overflow: hidden;
+           background: linear-gradient(var(--sky1), var(--sky2) 62%); }
+
+  /* ---------- Солнце ---------- */
+  .sun {
+    position: absolute; top: 7%; right: 9%; width: 84px; height: 84px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff6c9, #ffd75e 60%, #ffb84d);
+    box-shadow: 0 0 0 14px rgba(255, 214, 90, .25), 0 0 60px 20px rgba(255, 200, 80, .35);
+    animation: sun-pulse 6s ease-in-out infinite alternate;
+  }
+  @keyframes sun-pulse { to { box-shadow: 0 0 0 20px rgba(255,214,90,.18), 0 0 70px 28px rgba(255,200,80,.4); } }
+
+  /* ---------- Облака (медленный параллакс) ---------- */
+  .clouds { position: absolute; top: 6%; left: 0; bottom: var(--road-h); width: 100%;
+            overflow: hidden; pointer-events: none; }
+  .strip { display: flex; height: 100% !important; animation-duration: calc(80s / var(--speed)); will-change: transform; }
+  @keyframes scroll-x { to { transform: translateX(-50%); } }
+  .clouds .strip     { animation-name: scroll-x; animation-timing-function: linear; animation-iteration-count: infinite; }
+
+  .half { position: relative; flex: 0 0 auto; width: max(1700px, 200vw); height: 100%; }
+  .cloud { position: absolute; background: #fff; border-radius: 50px; filter: drop-shadow(0 6px 8px rgba(90,130,160,.18)); opacity: .95; }
+  .cloud::before, .cloud::after { content: ""; position: absolute; background: inherit; border-radius: 50%; }
+  .c-a { width: 170px; height: 48px; }
+  .c-a::before { width: 70px; height: 70px; left: 26px; top: -34px; }
+  .c-a::after  { width: 52px; height: 52px; right: 30px; top: -22px; }
+
+  /* ---------- Город на горизонте (средний параллакс) ---------- */
+  .city { position: absolute; left: 0; bottom: var(--road-h); width: 100%; overflow: hidden; pointer-events: none; }
+  .city .strip { animation-duration: calc(48s / var(--speed)); }
+  .building {
+    position: absolute; bottom: 0; border-radius: 6px 6px 0 0; opacity: .55;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,235,170,.85) 0 8px, transparent 8px 22px),
+      linear-gradient(#6f9fc4, #5b88a8);
+    background-blend-mode: overlay;
+    box-shadow: inset -10px 0 14px rgba(30,60,90,.25);
+  }
+
+  /* ---------- Земля / трава ---------- */
+  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 42%;
+            background: linear-gradient(#8fd47f, #6cbb5e 30%, #5aa94e); }
+
+  /* ---------- Деревья и столбы (быстрый параллакс) ---------- */
+  .trees { position: absolute; left: 0; bottom: var(--road-h); width: 100%; overflow: hidden; pointer-events: none; z-index: 2; }
+  .trees .strip { animation-duration: calc(9s / var(--speed)); }
+
+  .tree { position: absolute; bottom: -4px; width: 16px; height: 46px; background: linear-gradient(#8a5a33, #6d421f); border-radius: 4px; }
+  .tree::before { content: ""; position: absolute; left: 50%; bottom: 30px; transform: translateX(-50%);
+                  width: var(--w, 74px); height: var(--h, 86px); border-radius: 45%;
+                  background: radial-gradient(circle at 32% 28%, #6fbf5c, #3d8b3a 70%); }
+  .pole { position: absolute; bottom: -4px; width: 10px; height: 96px;
+          background: linear-gradient(90deg, #cfd6dd, #9aa4ad); border-radius: 4px; }
+  .pole::before { content: ""; position: absolute; top: -2px; left: -38px; width: 86px; height: 12px;
+                  background: linear-gradient(#dfe5ea, #aeb7c0); border-radius: 6px; }
+  .pole::after { content: ""; position: absolute; top: -14px; left: 30px; width: 18px; height: 16px;
+                 background: radial-gradient(circle at 50% 70%, #ffd75e, #f2a93b); border-radius: 50%; opacity: .95; }
+
+  /* ---------- Дорога ---------- */
+  .road { position: absolute; left: 0; right: 0; bottom: 0; height: var(--road-h); min-height: 170px; z-index: 3;
+          background: linear-gradient(#565c66, #474d56 55%, #3f444c); }
+  .road::before { /* верхний бордюр */
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 10px;
+    background: linear-gradient(#e8edf2, #b9c2cc); box-shadow: 0 3px 5px rgba(0,0,0,.25);
+  }
+  .road::after { /* бегущая разметка */
+    content: ""; position: absolute; top: 46%; left: 0; right: 0; height: 12px;
+    background: repeating-linear-gradient(90deg, #f5f7fa 0 70px, transparent 70px 170px);
+    animation: road-dash calc(1.1s / var(--speed)) linear infinite;
+    border-radius: 2px; opacity: .92;
+  }
+  @keyframes road-dash { to { background-position-x: -340px; } }
+
+  /* ---------- Машина ---------- */
+  .car { position: absolute; left: 14%; bottom: calc(var(--road-h) * 0.26); z-index: 5;
+         width: min(58vw, 330px); aspect-ratio: 330/150; }
+
+  .body-group { position: absolute; inset: 0; animation: bob calc(1.4s / max(var(--speed),.6)) ease-in-out infinite alternate; transform-origin: 50% 90%; }
+  @keyframes bob { from { transform: translateY(0) rotate(-0.3deg); } to { transform: translateY(-4px) rotate(0.5deg); } }
+
+  .chassis { position: absolute; left: 2%; bottom: 16%; width: 96%; height: 46%;
+             background: linear-gradient(#ff8a3d, #e85f1c 70%, #cf4d10); border-radius: 26px 30px 18px 18px; }
+  .chassis::after { /* дверная ручка + линия */
+    content: ""; position: absolute; top: 9%; right: 26%; width: 4%; height: 70%; min-width: 5px;
+    background: rgba(120,30,0,.35); border-radius: 4px; }
+
+  .cabin { position: absolute; left: 26%; bottom: 47%; width: 47%; height: 38%;
+           background: linear-gradient(#ff9b52, #e96a1f); border-radius: 40% 55% 0 0 / 90% 90% 0 0; }
+
+  .window { position: absolute; top: 22%; height: 58%; background: linear-gradient(#dff3ff, #a8d8f0); border-radius: 10px; box-shadow: inset 0 -6px 0 rgba(70,120,160,.25); }
+  .window.front { right: 12%; width: 40%; transform: skewX(-14deg); }
+  .window.rear  { left: 14%;  width: 38%; transform: skewX(10deg); }
+
+  .light-front { position: absolute; right: -6px; bottom: calc(var(--road-h) * 0.26 + 0%);
+                  top: auto; bottom: 22%; width: 14px; height: 20px; border-radius: 50% 60% 60% 50%;
+                  background: radial-gradient(circle at 35% 35%, #fffbe0, #ffd75e); box-shadow: 0 0 14px 4px rgba(255,220,120,.8); }
+  .light-tail { position: absolute; left: -4px; bottom: 24%; width: 10px; height: 16px; border-radius: 5px;
+                background: radial-gradient(circle at 40% 35%, #ff9d8a, #d92c2c); box-shadow: 0 0 10px 2px rgba(255,70,70,.6); }
+
+  .bumpers { position: absolute; left: -4%; bottom: calc(var(--road-h) * 0.26 + 0%); bottom: 8%; width: 108%; height: 9px;
+             background: linear-gradient(#e8edf2, #aab3bd); border-radius: 6px; }
+
+  /* луч фары */
+  .beam { position: absolute; right: -46%; bottom: 26%; width: 50%; height: 16%; transform-origin: left center;
+          background: linear-gradient(90deg, rgba(255,230,140,.35), transparent 80%);
+          clip-path: polygon(0 38%, 100% 0, 100% 100%, 0 62%); opacity: .8; }
+
+  /* колёса (не качаются вместе с кузовом) */
+  .wheel { position: absolute; bottom: -4%; width: 23%; aspect-ratio: 1/1; border-radius: 50%; z-index: 6;
+           background: radial-gradient(circle at 50% 50%, #e8edf2 0 17%, #7d8791 18% 34%, #20242a 34%);
+           box-shadow: inset 0 -6px 10px rgba(0,0,0,.5), 0 5px 8px rgba(0,0,0,.35);
+           animation: spin calc(.7s / var(--speed)) linear infinite; }
+  .wheel::before { content: ""; position: absolute; inset: 16%; border-radius: 50%;
+                   background: conic-gradient(#454c55 0 20deg, #23272d 20deg 80deg, #454c55 80deg 100deg, #23272d 100deg 160deg, #454c55 160deg 180deg, #23272d 180deg 240deg, #454c55 240deg 260deg, #23272d 260deg 320deg, #454c55 320deg 340deg, #23272d 340deg); }
+  .wheel.front { right: 8%; }   .wheel.rear { left: 12%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* выхлоп */
+  .puff { position: absolute; left: -7%; bottom: 24%; width: 16px; height: 16px; border-radius: 50%;
+          background: rgba(210,215,220,.85); z-index: 4; opacity: 0; animation: puff calc(1.6s / var(--speed)) ease-out infinite; }
+  .puff.p2 { animation-delay: calc(.5s / var(--speed)); }
+  .puff.p3 { animation-delay: calc(1s  / var(--speed)); }
+  @keyframes puff {
+    0%   { transform: translate(0,0) scale(.4); opacity: 0; }
+    15%  { opacity: .8; }
+    100% { transform: translate(-90px, -34px) scale(2.6); opacity: 0; }
+  }
+
+  /* тень под машиной */
+  .shadow { position: absolute; left: 8%; bottom: calc(var(--road-h) * 0.26 - 12px); width: min(52vw, 300px); height: 20px; z-index: 4;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,.38), transparent 70%); border-radius: 50%; }
+
+  /* ---------- Панель управления ---------- */
+  .panel { position: absolute; left: 16px; bottom: 16px; z-index: 10; display: flex; align-items: center; gap: 12px;
+           background: rgba(255,255,255,.82); backdrop-filter: blur(6px); border-radius: 14px; padding: 10px 14px;
+           box-shadow: 0 8px 24px rgba(0,30,60,.18); font-size: 14px; color: #2b3a45; user-select: none; }
+  .panel label { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .panel input[type=range] { width: 130px; accent-color: #e8621c; }
+  .panel button { border: none; background: #e8621c; color: #fff; font-weight: 700; padding: 7px 14px; border-radius: 9px; cursor: pointer; transition: filter .15s; }
+  .panel button:hover { filter: brightness(1.1); }
+
+  body.paused .scene * { animation-play-state: paused !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene * { animation-play-state: paused !important; }
+  }
+</style>
+</head>
+<body>
+<div class="scene" id="scene">
+
+  <div class="sun"></div>
+
+  <!-- облака -->
+  <div class="clouds"><div class="strip">
+    <div class="half">
+      <span class="cloud c-a" style="left:4%; top:18%"></span>
+      <span class="cloud c-a" style="left:32%; top:52%; transform:scale(.8)"></span>
+      <span class="cloud c-a" style="left:60%; top:10%; transform:scale(1.15)"></span>
+    </div>
+    <div class="half">
+      <span class="cloud c-a" style="left:4%; top:18%"></span>
+      <span class="cloud c-a" style="left:32%; top:52%; transform:scale(.8)"></span>
+      <span class="cloud c-a" style="left:60%; top:10%; transform:scale(1.15)"></span>
+    </div>
+  </div></div>
+
+  <!-- город -->
+  <div class="city"><div class="strip">
+    <div class="half">
+      <span class="building" style="left:2%;  width:90px;  height:88%"></span>
+      <span class="building" style="left:11%; width:64px;  height:55%"></span>
+      <span class="building" style="left:20%; width:118px; height:98%"></span>
+      <span class="building" style="left:34%; width:78px;  height:64%"></span>
+      <span class="building" style="left:45%; width:104px; height:82%"></span>
+      <span class="building" style="left:59%; width:70px;  height:48%"></span>
+      <span class="building" style="left:69%; width:130px; height:92%"></span>
+      <span class="building" style="left:83%; width:84px;  height:70%"></span>
+    </div>
+    <div class="half">
+      <span class="building" style="left:2%;  width:90px;  height:88%"></span>
+      <span class="building" style="left:11%; width:64px;  height:55%"></span>
+      <span class="building" style="left:20%; width:118px; height:98%"></span>
+      <span class="building" style="left:34%; width:78px;  height:64%"></span>
+      <span class="building" style="left:45%; width:104px; height:82%"></span>
+      <span class="building" style="left:59%; width:70px;  height:48%"></span>
+      <span class="building" style="left:69%; width:130px; height:92%"></span>
+      <span class="building" style="left:83%; width:84px;  height:70%"></span>
+    </div>
+  </div></div>
+
+  <!-- трава -->
+  <div class="ground"></div>
+
+  <!-- деревья и столбы -->
+  <div class="trees"><div class="strip">
+    <div class="half">
+      <span class="tree" style="left:6%;  --w:80px; --h:92px"></span>
+      <span class="pole" style="left:17%"></span>
+      <span class="tree" style="left:33%; --w:64px; --h:74px; transform:scale(.9)"></span>
+      <span class="tree" style="left:52%; --w:88px; --h:100px"></span>
+      <span class="pole" style="left:66%"></span>
+      <span class="tree" style="left:80%; --w:70px; --h:80px"></span>
+    </div>
+    <div class="half">
+      <span class="tree" style="left:6%;  --w:80px; --h:92px"></span>
+      <span class="pole" style="left:17%"></span>
+      <span class="tree" style="left:33%; --w:64px; --h:74px; transform:scale(.9)"></span>
+      <span class="tree" style="left:52%; --w:88px; --h:100px"></span>
+      <span class="pole" style="left:66%"></span>
+      <span class="tree" style="left:80%; --w:70px; --h:80px"></span>
+    </div>
+  </div></div>
+
+  <!-- дорога -->
+  <div class="road"></div>
+
+  <!-- тень и машина -->
+  <div class="shadow"></div>
+  <div class="car">
+    <div class="beam"></div>
+    <span class="puff p1"></span><span class="puff p2"></span><span class="puff p3"></span>
+    <div class="body-group">
+      <div class="chassis"></div>
+      <div class="cabin">
+        <span class="window front"></span>
+        <span class="window rear"></span>
+      </div>
+      <span class="light-front"></span>
+      <span class="light-tail"></span>
+      <div class="bumpers"></div>
+    </div>
+    <div class="wheel front"></div>
+    <div class="wheel rear"></div>
+  </div>
+
+  <!-- управление -->
+  <div class="panel">
+    <button id="toggleBtn">Пауза</button>
+    <label>Скорость <input type="range" id="speedRange" min="0.25" max="3" step="0.05" value="1"></label>
+  </div>
+
+</div>
+<script>
+  const root = document.documentElement;
+  const range = document.getElementById('speedRange');
+  const btn = document.getElementById('toggleBtn');
+
+  range.addEventListener('input', () => root.style.setProperty('--speed', range.value));
+
+  btn.addEventListener('click', () => {
+    document.body.classList.toggle('paused');
+    btn.textContent = document.body.classList.contains('paused') ? 'Поехали' : 'Пауза';
+  });
+</script>
+</body>
+</html>

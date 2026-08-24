@@ -1,0 +1,242 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.hidden { display: none !important; }
+
+[hidden] { display: none !important; }
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f4f6f8;
+  color: #2d3436;
+  min-height: 100vh;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 0;
+}
+
+.site-logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d2b3a;
+  text-decoration: none;
+}
+
+.site-nav ul { list-style: none; display: flex; gap: 18px; margin-left: auto; }
+
+.site-userbox { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+
+.user-chip { color: #2d3436; font-size: 14px; font-weight: 500; }
+
+.role-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #eef1f4;
+  color: #7f8c9b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.role-admin { background: #eaf2fd; color: #1e6fd9; }
+
+.site-nav a.nav-link,
+.site-nav li.current a {
+  color: #7f8c9b;
+  text-decoration: none;
+  font-size: 15px;
+  transition: color .15s;
+}
+
+.site-nav a.nav-link:hover { color: #2d3436; }
+
+.site-nav li.current span { color: #2f80ed; font-weight: 600; font-size: 15px; }
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+header.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+h1 { font-size: 28px; }
+
+.search-box input {
+  width: 280px;
+  max-width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+.search-box input:focus { border-color: #2f80ed; }
+
+p.empty-state {
+  text-align: center;
+  color: #7f8c9b;
+  padding: 40px 0;
+}
+
+.breadcrumb { margin-bottom: 16px; }
+
+.back-link {
+  color: #2f80ed;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.back-link:hover { text-decoration: underline; }
+
+.btn-submit {
+  display: inline-block;
+  width: auto;
+  padding: 12px 24px;
+  background: #2f80ed;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s;
+}
+
+.btn-submit:hover { background: #1e6fd9; }
+
+.form-inline {
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #e3e8ee;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+.form-inline input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-inline input:focus { border-color: #2f80ed; }
+
+.form-inline-category { flex-wrap: wrap; }
+
+.btn-submit.btn-sm {
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.btn-ghost {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #f4f6f8;
+  color: #7f8c9b;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background .15s;
+}
+
+.btn-ghost:hover { background: #e8ecf1; }
+
+.item-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s, transform .15s;
+  color: #7f8c9b;
+}
+
+.icon-btn:hover {
+  transform: scale(1.08);
+}
+
+.icon-btn.icon-edit {
+  color: #2f80ed;
+  border-color: #d4e4fa;
+}
+
+.icon-btn.icon-edit:hover {
+  background: #eaf2fd;
+  border-color: #2f80ed;
+  color: #1a5fc9;
+}
+
+.icon-btn.icon-del {
+  color: #e74c3c;
+  border-color: #fadbd8;
+}
+
+.icon-btn.icon-del:hover {
+  background: #fdf2f0;
+  border-color: #e74c3c;
+  color: #c0392b;
+}
+
+.inline-rename-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.inline-rename-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #dfe6e9;
+  border-radius: 6px;
+  font-size: 15px;
+  outline: none;
+}
+
+.inline-rename-form input:focus { border-color: #2f80ed; }
+
+form.inline-rename-form button {
+  width: auto;
+  padding: 8px 14px;
+}
+
+.form-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin-top: 8px;
+  padding: 6px 0;
+}
+
+.hidden { display: none !important; }
