@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Удаление символов ^ из curl-команды</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    padding: 32px;
+  }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  h1 code {
+    background: #eef2ff; color: #4338ca;
+    padding: 2px 8px; border-radius: 6px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+  .subtitle { color: #6b7280; margin-bottom: 24px; line-height: 1.5; font-size: 14px; }
+  .panel { margin-bottom: 16px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    padding: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    background: #f9fafb;
+    color: #111827;
+  }
+  textarea:focus {
+    outline: none; border-color: #6366f1; background: #fff;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  button {
+    padding: 10px 18px;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: transform .05s, background .15s;
+  }
+  button:active { transform: translateY(1px); }
+  #cleanBtn    { background: #4f46e5; color: #fff; }
+  #cleanBtn:hover    { background: #4338ca; }
+  #oneLineBtn { background: #eef2ff; color: #4338ca; }
+  #oneLineBtn:hover { background: #e0e7ff; }
+  #copyBtn    { background: #059669; color: #fff; }
+  #copyBtn:hover    { background: #047857; }
+  #clearBtn   { background: #f3f4f6; color: #6b7280; }
+  #clearBtn:hover   { background: #e5e7eb; }
+  #stats { margin-top: 8px; font-size: 13px; color: #6b7280; min-height: 18px; }
+  #stats.ok { color: #059669; font-weight: 600; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Удаление последовательностей с символом <code>^</code></h1>
+    <p class="subtitle">
+      Вставьте curl-команду, в которой <code>^</code> используется как символ экранирования
+      (Windows CMD). Инструмент раскроет все <code>^X</code> в <code>X</code> и
+      <code>^^</code> в <code>^</code>, вернув читаемый запрос.
+    </p>
+
+    <div class="panel">
+      <label for="input">Входной текст</label>
+      <textarea id="input" spellcheck="false" placeholder="Вставьте сюда curl-команду с символами ^..."></textarea>
+    </div>
+
+    <div class="actions">
+      <button id="cleanBtn">Очистить ^</button>
+      <button id="oneLineBtn">В одну строку</button>
+      <button id="copyBtn">Копировать</button>
+      <button id="clearBtn">Сбросить</button>
+    </div>
+
+    <div class="panel">
+      <label for="output">Результат</label>
+      <textarea id="output" readonly spellcheck="false" placeholder="Здесь появится очищенный запрос..."></textarea>
+      <div id="stats"></div>
+    </div>
+  </div>
+
+<script>
+  const input  = document.getElementById('input');
+  const output = document.getElementById('output');
+  const stats  = document.getElementById('stats');
+
+  // Раскрываем экранирование CMD: ^X -> X, ^^ -> ^
+  function unescapeCaret(text) {
+    let result = '';
+    let i = 0;
+    let removed = 0;
+    while (i < text.length) {
+      if (text[i] === '^' && i + 1 < text.length) {
+        result += text[i + 1];   // следующий символ становится обычным
+        removed++;
+        i += 2;
+      } else {
+        result += text[i];
+        i++;
+      }
+    }
+    return { text: result, removed };
+  }
+
+  document.getElementById('cleanBtn').addEventListener('click', () => {
+    const raw = input.value;
+    if (!raw.trim()) {
+      stats.textContent = 'Сначала вставьте текст для обработки.';
+      stats.className = '';
+      return;
+    }
+    const { text, removed } = unescapeCaret(raw);
+    output.value = text;
+    stats.textContent = `Готово: удалено символов ^ — ${removed}.`;
+    stats.className = 'ok';
+  });
+
+  document.getElementById('oneLineBtn').addEventListener('click', () => {
+    const current = output.value || unescapeCaret(input.value).text;
+    const one = current
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+    output.value = one;
+    stats.textContent = 'Скомпоновано в одну строку.';
+    stats.className = 'ok';
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    if (!output.value) {
+      stats.textContent = 'Нечего копировать.';
+      stats.className = '';
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(output.value);
+    } catch (e) {
+      output.select();
+      document.execCommand('copy');
+    }
+    stats.textContent = 'Скопировано в буфер обмена.';
+    stats.className = 'ok';
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    input.value = '';
+    output.value = '';
+    stats.textContent = '';
+    stats.className = '';
+    input.focus();
+  });
+</script>
+</body>
+</html>
