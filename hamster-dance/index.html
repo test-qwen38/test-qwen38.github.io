@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Хомяк на дансполе · three.js</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{ --acc:#ff2fb9; --acc2:#1fd9ff; --ink:#f4efff; --mut:#9a8fb8; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; overflow:hidden; background:#0b0716; color:var(--ink);
+    font-family:'Manrope',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+
+  #stage{ position:fixed; inset:0; width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
+  #stage.grabbing{ cursor:grabbing; }
+
+  .vignette{ position:fixed; inset:0; pointer-events:none; z-index:2;
+    background:radial-gradient(ellipse at 50% 42%, transparent 52%, rgba(4,2,10,.62) 100%),
+               linear-gradient(rgba(8,4,18,.55), transparent 18%); }
+
+  .hud{ position:fixed; z-index:5; user-select:none; }
+
+  /* ---------- шапка ---------- */
+  .top{ top:22px; left:24px; animation:inL .9s cubic-bezier(.2,.8,.2,1) both .15s; }
+  .chips{ display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+  .chip{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--mut);
+    border:1px solid rgba(255,255,255,.14); padding:4px 9px; border-radius:3px; background:rgba(20,12,36,.5); }
+  .chip b{ color:var(--acc); font-weight:800; }
+  h1{ font-family:'Unbounded',sans-serif; line-height:.95; letter-spacing:.01em;
+      display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  h1 .l1{ font-size:clamp(30px,4.6vw,52px); font-weight:800; text-shadow:0 4px 30px rgba(0,0,0,.6); }
+  .titlebox{ display:flex; align-items:center; gap:16px; }
+  h1 .l2{ display:block; font-size:clamp(15px,2vw,22px); font-weight:500; letter-spacing:.3em; color:var(--acc);
+          text-shadow:0 0 18px var(--acc); transition:color .4s, text-shadow .4s; }
+  .eq{ display:flex; align-items:flex-end; gap:3px; height:26px; margin-left:2px; }
+  .eq i{ width:5px; background:var(--acc); border-radius:2px; transform-origin:bottom;
+         animation:eq .5s ease-in-out infinite alternate; transition:background .4s; }
+  .eq i:nth-child(1){ height:60%; animation-duration:.42s; }
+  .eq i:nth-child(2){ height:100%; animation-delay:.12s; }
+  .eq i:nth-child(3){ height:75%; animation-delay:.24s; animation-duration:.38s; }
+  .eq i:nth-child(4){ height:95%; animation-delay:.06s; }
+  .eq i:nth-child(5){ height:55%; animation-delay:.18s; animation-duration:.46s; }
+  @keyframes eq{ from{ transform:scaleY(.25);} to{ transform:scaleY(1);} }
+  .sub{ margin-top:9px; font-size:12.5px; color:var(--mut); letter-spacing:.03em; max-width:42ch; }
+
+  /* ---------- «сейчас в центре» ---------- */
+  .now{ left:24px; bottom:26px; animation:inL .9s cubic-bezier(.2,.8,.2,1) both .35s; }
+  .now-label{ display:block; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--mut); margin-bottom:6px; }
+  .now-name{ font-family:'Unbounded',sans-serif; font-weight:800; font-size:clamp(22px,3vw,34px);
+    color:#fff; text-shadow:0 0 22px var(--acc), 0 0 60px rgba(0,0,0,.5); display:inline-block; }
+  .now-name.pop{ animation:pop .45s cubic-bezier(.2,1.6,.3,1); }
+  @keyframes pop{ 0%{ transform:scale(.7) rotate(-3deg);} 100%{ transform:scale(1);} }
+
+  /* ---------- панель управления ---------- */
+  .panel{ right:20px; bottom:20px; width:308px; z-index:6; padding:16px 16px 14px;
+    background:rgba(15,9,28,.86); border:1px solid rgba(255,255,255,.12); border-radius:14px;
+    box-shadow:0 18px 50px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+    animation:inR .9s cubic-bezier(.2,.8,.2,1) both .25s; }
+  .row{ display:flex; align-items:center; gap:10px; padding:7px 0; flex-wrap:wrap; }
+  .row + .row{ border-top:1px dashed rgba(255,255,255,.08); }
+  .lbl{ font-size:10px; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--mut); width:64px; flex:none; }
+
+  .swatch{ width:24px; height:24px; border-radius:50%; border:2px solid transparent; cursor:pointer; padding:0;
+    transition:transform .18s, border-color .18s, box-shadow .18s; }
+  .swatch:hover{ transform:scale(1.18); }
+  .swatch.active{ border-color:#fff; box-shadow:0 0 12px var(--acc); transform:scale(1.15); }
+
+  .mbtn{ font-family:'Manrope',sans-serif; font-weight:800; font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--ink); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    padding:7px 10px; border-radius:8px; cursor:pointer; transition:all .16s; }
+  .mbtn:hover{ transform:translateY(-2px); background:rgba(255,255,255,.12); box-shadow:0 6px 14px rgba(0,0,0,.35); }
+  .mbtn.active{ background:var(--acc); border-color:var(--acc); color:#170a1c; box-shadow:0 0 16px var(--acc); }
+
+  input[type=range]{ flex:1; accent-color:var(--acc); cursor:pointer; min-width:120px; }
+  #bpmVal{ font-family:'Unbounded',sans-serif; font-size:13px; font-weight:800; color:var(--acc); width:58px; text-align:right; transition:color .4s; }
+
+  #soundBtn .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; background:#5a4f6e; margin-right:7px;
+    vertical-align:1px; transition:all .2s; }
+  #soundBtn.on .dot{ background:var(--acc); box-shadow:0 0 8px var(--acc); }
+
+  .hint{ font-size:11px; color:var(--mut); line-height:1.55; padding-top:9px; border-top:1px dashed rgba(255,255,255,.08); }
+  .hint b{ color:#cfc4ea; }
+
+  /* ---------- FPS / всплывашки ---------- */
+  #fps{ top:24px; right:24px; font-family:'Unbounded',sans-serif; font-size:12px; font-weight:800;
+    letter-spacing:.1em; color:var(--acc); background:rgba(15,9,28,.7); border:1px solid rgba(255,255,255,.1);
+    padding:6px 10px; border-radius:6px; transition:color .4s; }
+
+  .fl{ position:fixed; z-index:9; font-family:'Unbounded',sans-serif; font-weight:800; font-size:17px; color:var(--acc);
+    text-shadow:0 0 14px var(--acc), 0 2px 6px rgba(0,0,0,.6); pointer-events:none; transform:translate(-50%,-50%);
+    animation:floatUp .9s ease-out forwards; }
+  @keyframes floatUp{ to{ transform:translate(-50%,-180%) scale(1.3) rotate(6deg); opacity:0; } }
+
+  body{ animation:fade .7s ease-out both; }
+  @keyframes fade{ from{opacity:0;} }
+  @keyframes inL{ from{ opacity:0; transform:translateX(-24px);} }
+  @keyframes inR{ from{ opacity:0; transform:translateX(24px);} }
+
+  /* ---------- планшет / широкий телефон ---------- */
+  @media (max-width:760px){
+    .top{ top:14px; left:14px; } .sub{ display:none; }
+    .now{ bottom:auto; top:calc(14px + 96px); left:14px; } .now-name{ font-size:20px; }
+    #fps{ top:14px; right:14px; }
+    .panel{ right:10px; left:10px; width:auto; bottom:10px; padding:12px 14px; }
+    .lbl{ width:56px; } .hint{ display:none; }
+  }
+
+  /* ---------- мобильная одноколоночная вёрстка ---------- */
+  @media (max-width:560px){
+    :root{ --pad:12px; }
+    body, html{ height:100dvh; }
+    .hud{ position:absolute; transition:none !important; animation:none !important; opacity:1 !important; transform:none !important; }
+
+    /* шапка сверху, на всю ширину */
+    .top{ top:calc(env(safe-area-inset-top,0px) + 12px); left:var(--pad); right:var(--pad); bottom:auto; }
+    h1 .l1{ font-size:clamp(26px,9vw,34px); }
+    h1 .l2{ font-size:clamp(12px,3.6vw,15px); letter-spacing:.2em; }
+
+    /* счётчик fps — компактный в углу */
+    #fps{ top:auto; bottom:auto; right:var(--pad); top:calc(env(safe-area-inset-top,0px) + 12px); font-size:10px; padding:4px 7px; }
+
+    /* «сейчас» — под шапкой */
+    .now{ left:var(--pad); right:auto; bottom:auto; top:calc(env(safe-area-inset-top,0px) + 92px); }
+    .now-name{ font-size:18px; }
+
+    /* панель — на всю ширину снизу */
+    .panel{ left:var(--pad); right:var(--pad); width:auto; bottom:calc(env(safe-area-inset-bottom,0px) + 12px); padding:13px 14px; }
+    .row{ gap:8px; padding:6px 0; }
+    .lbl{ width:52px; font-size:9.5px; }
+
+    /* кнопки танца — по 3 в ряд */
+    #movesRow{ display:grid !important; grid-template-columns:repeat(3,1fr); gap:7px; flex:1; }
+    .mbtn{ padding:8px 6px; font-size:10.5px; text-align:center; letter-spacing:.04em; }
+
+    /* BPM на полный ряд */
+    #bpmRow{ flex-wrap:nowrap !important; }
+    #bpm{ min-width:0; flex:1; }
+
+    /* звук — отдельная строка, по ширине */
+    #soundBtn{ width:100%; justify-content:center; padding:9px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){ .eq i, body, .top, .panel, .now{ animation:none; } }
+</style>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+
+<canvas id="stage"></canvas>
+<div class="vignette"></div>
+
+<header class="hud top">
+  <div class="chips">
+    <span class="chip"><b>three.js</b> · r160</span>
+    <span class="chip">PBR · MeshStandardMaterial</span>
+    <span class="chip">процедурно · без ассетов</span>
+  </div>
+  <h1><span class="l1">ХОМЯК</span>
+    <span class="titlebox"><span class="l2">НА ДАНСПОЛЕ</span><span class="eq"><i></i><i></i><i></i><i></i><i></i></span></span>
+  </h1>
+  <p class="sub">Процедурная хореография под бит: вращение вокруг стержня, дэб, мельница и прыжки. Всё считается на лету.</p>
+</header>
+
+<div class="hud now">
+  <span class="now-label">Сейчас в центре</span>
+  <span id="moveName" class="now-name">ГРУВ</span>
+</div>
+
+<aside class="panel hud">
+  <div class="row"><span class="lbl">Палитра</span><span id="swatches" style="display:flex;gap:10px"></span></div>
+  <div class="row" style="align-items:flex-start">
+    <span class="lbl" style="margin-top:8px">Танец</span>
+    <span id="movesRow" style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="mbtn active" data-move="auto">Авто</button>
+      <button class="mbtn" data-move="groove">Грув</button>
+      <button class="mbtn" data-move="wrap">Вираж</button>
+      <button class="mbtn" data-move="dab">Дэб</button>
+      <button class="mbtn" data-move="hop">Прыгун</button>
+      <button class="mbtn" data-move="windmill">Мельница</button>
+    </span>
+  </div>
+  <div class="row" id="bpmRow"><span class="lbl">Темп</span>
+    <input id="bpm" type="range" min="90" max="165" value="128" aria-label="BPM">
+    <span id="bpmVal">128 BPM</span>
+  </div>
+  <div class="row"><button id="soundBtn" class="mbtn"><span class="dot"></span>Звук: выкл</button></div>
+  <p class="hint"><b>ЛКМ / палец</b> — вращать камеру · <b>колесо / щипок</b> — зум<br><b>клик по хомяку</b> или <b>пробел</b> — буст-вращение 🔥</p>
+</aside>
+
+<div id="fps" class="hud">— FPS</div>
+
+<script type="module">
+import * as THREE from 'three';
+
+const $ = id => document.getElementById(id);
+const canvas = $('stage');
+
+/* ================= РЕНДЕРЕР / СЦЕНА ================= */
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0716);
+scene.fog = new THREE.FogExp2(0x0b0716, 0.034);
+
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, .1, 120);
+const std = o => new THREE.MeshStandardMaterial(o);
+
+/* ================= HDR-ОКРУЖЕНИЕ (отражения для PBR) ================= */
+{
+  const es = new THREE.Scene();
+  es.add(new THREE.Mesh(new THREE.BoxGeometry(36,14,36),
+        new THREE.MeshBasicMaterial({ color:0x191227, side:THREE.BackSide })));
+  const bar = (w,h,d,x,y,z,hex,k)=>{
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshBasicMaterial());
+    m.material.color.set(hex).multiplyScalar(k);   // цвет ярче единицы → HDR-блики в PMREM
+    m.position.set(x,y,z); es.add(m);
+  };
+  bar(.6,10,.4,-17.5,2,-4,  0xff2fb9, 6);
+  bar(.6,10,.4, 17.5,2, 5,  0x1fd9ff, 6);
+  bar(14,.8,.4, -2, 5.5,-17.5, 0xffb35c, 5);
+  bar(5,.7,.4,   4, 6, 17.5,  0xffffff, 7);
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(es, .35).texture;
+  es.traverse(o=>{ if(o.isMesh){ o.geometry.dispose(); o.material.dispose(); }});
+  pmrem.dispose();
+}
+
+/* ================= СВЕТ (ambient + dir с тенями + цветные point) ================= */
+scene.add(new THREE.AmbientLight(0x9a8ac0, .65));
+
+const dir = new THREE.DirectionalLight(0xfff1dd, 2.0);
+dir.position.set(6, 11, 5);
+dir.castShadow = true;
+dir.shadow.mapSize.set(2048, 2048);
+Object.assign(dir.shadow.camera, { left:-7, right:7, top:9, bottom:-3, near:3, far:30 });
+dir.shadow.bias = -0.0004; dir.shadow.normalBias = .035;
+dir.shadow.camera.updateProjectionMatrix();
+scene.add(dir, dir.target); dir.target.position.set(0, 2, 0);
+
+const BASE = { A:60, B:55, W:34 };
+const lightA = new THREE.PointLight(0xff2fb9, BASE.A, 30, 2);
+const lightB = new THREE.PointLight(0x1fd9ff, BASE.B, 30, 2);
+const lightW = new THREE.PointLight(0xffb35c, BASE.W, 18, 2);
+lightW.position.set(-1.4, .6, 2.2);
+scene.add(lightA, lightB, lightW);
+
+/* ================= ПОЛ / СЦЕНА / СТЕРЖЕНЬ ================= */
+const hexA = (hex,a)=>{ const c=new THREE.Color(hex); return `rgba(${c.r*255|0},${c.g*255|0},${c.b*255|0},${a})`; };
+
+const floorCv = document.createElement('canvas'); floorCv.width = floorCv.height = 512;
+function drawFloor(a, b){
+  const x = floorCv.getContext('2d');
+  const g = x.createRadialGradient(256,256,30, 256,256,300);
+  g.addColorStop(0,'#281c46'); g.addColorStop(1,'#100b20');
+  x.fillStyle = g; x.fillRect(0,0,512,512);
+  [[66,.9,3],[122,.5,2],[182,.32,2]].forEach(([r,al,w])=>{
+    x.beginPath(); x.arc(256,256,r,0,7); x.lineWidth=w;
+    x.strokeStyle=hexA(a,al); x.shadowColor=a; x.shadowBlur=14; x.stroke(); x.shadowBlur=0;
+  });
+  x.setLineDash([18,14]); x.beginPath(); x.arc(256,256,214,0,7);
+  x.lineWidth=3; x.strokeStyle=hexA(b,.5); x.stroke(); x.setLineDash([]);
+  x.lineWidth=2;
+  for(let i=0;i<36;i++){ const an=i/36*Math.PI*2;
+    x.beginPath();
+    x.moveTo(256+Math.cos(an)*234, 256+Math.sin(an)*234);
+    x.lineTo(256+Math.cos(an)*250, 256+Math.sin(an)*250);
+    x.strokeStyle=hexA(b,.28); x.stroke(); }
+  x.beginPath(); x.arc(256,256,10,0,7); x.fillStyle=hexA(a,.9); x.fill();
+}
+const floorTex = new THREE.CanvasTexture(floorCv);
+floorTex.colorSpace = THREE.SRGBColorSpace;
+floorTex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+
+{ // земля + круглая сцена + стена клуба
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(22,64), std({ color:0x140f24, roughness:.95 }));
+  ground.rotation.x = -Math.PI/2; ground.receiveShadow = true; scene.add(ground);
+
+  const stageM = std({ map:floorTex, roughness:.32, metalness:.55, envMapIntensity:.7 });
+  const stage = new THREE.Mesh(new THREE.CircleGeometry(5.4,72), stageM);
+  stage.rotation.x = -Math.PI/2; stage.position.y = .015; stage.receiveShadow = true; scene.add(stage);
+
+  const wall = new THREE.Mesh(new THREE.CylinderGeometry(19,19,26,48,1,true),
+            std({ color:0x0e0a1c, roughness:1, side:THREE.BackSide }));
+  wall.position.y = 13; scene.add(wall);
+}
+
+/* --- данс-пол --- */
+const poleMat = std({ color:0xdfe5ee, metalness:1, roughness:.14, envMapIntensity:2.2 });
+{
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.3,.22,48),
+                std({ color:0x2b2440, metalness:.9, roughness:.35 }));
+  plate.position.y=.11; plate.receiveShadow=true; scene.add(plate);
+
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,7,48), poleMat);
+  pole.position.y=3.5; pole.castShadow=true; scene.add(pole);
+
+  [1.1,4.7].forEach(y=>{
+    const c = new THREE.Mesh(new THREE.TorusGeometry(.185,.022,10,40),
+      std({ color:0x3a3350, metalness:.9, roughness:.3 }));
+    c.rotation.x=Math.PI/2; c.position.y=y; scene.add(c);
+  });
+
+  const cap = new THREE.Mesh(new THREE.SphereGeometry(.18,24,16), poleMat);
+  cap.scale.y=.55; cap.position.y=7.03; scene.add(cap);
+}
+const glowRingM = std({ color:0x1a1a22, emissive:0xff2fb9, emissiveIntensity:2, roughness:.4 });
+{ const gr = new THREE.Mesh(new THREE.TorusGeometry(.17,.018,10,40), glowRingM);
+  gr.rotation.x=Math.PI/2; gr.position.y=3.15; scene.add(gr); }
+const tipMat = std({ color:0x332a20, emissive:0xffb35c, emissiveIntensity:1.4 });
+{ const tip = new THREE.Mesh(new THREE.SphereGeometry(.06,12,10), tipMat); tip.position.y=7.2; scene.add(tip); }
+
+/* --- диско-шар --- */
+const disco = new THREE.Group();
+{
+  const rod = new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,2.6,8), std({ color:0x443c5e, metalness:.8, roughness:.4 }));
+  rod.position.y=7.6; disco.add(rod);
+  const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(.5,1),
+    std({ color:0xffffff, metalness:1, roughness:.12, flatShading:true, envMapIntensity:1.9 }));
+  ball.position.y=6.3; ball.castShadow=true; disco.add(ball);
+  disco.userData.ball = ball;
+}
+disco.position.set(-2.7,0,-2.1); scene.add(disco);
+
+/* --- световые лучи (аддитивные конусы) + следящий прожектор --- */
+function makeBeam(hex, op){
+  const g = new THREE.Group(); g.position.y=9.3;
+  const mat = new THREE.MeshBasicMaterial({ color:hex, transparent:true, opacity:op,
+    blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(2.4,8.6,26,1,true), mat);
+  cone.position.y=-4.3; g.add(cone); scene.add(g);
+  return { g, mat };
+}
+const beamA = makeBeam('#ff2fb9', .10); beamA.g.rotation.z=.13;
+const beamB = makeBeam('#1fd9ff', .10); beamB.g.rotation.z=-.13;
+const spot  = makeBeam('#ffe8c4', .07);
+
+/* --- LED-столбики по периметру --- */
+const posts = [];
+for(let i=0;i<8;i++){
+  const an=i/8*Math.PI*2;
+  const m = std({ color:0x1c1630, emissive:0xff2fb9, emissiveIntensity:1, roughness:.5 });
+  const p = new THREE.Mesh(new THREE.CapsuleGeometry(.09,.8,4,10), m);
+  p.position.set(Math.cos(an)*7, .62, Math.sin(an)*7);
+  scene.add(p); posts.push({ mesh:p, mat:m, i });
+}
+
+/* --- пульсирующие кольца на полу (пул) --- */
+const rings = [];
+for(let i=0;i<5;i++){
+  const m = new THREE.MeshBasicMaterial({ color:0xff2fb9, transparent:true, opacity:0,
+    blending:THREE.AdditiveBlending, depthWrite:false, side:THREE.DoubleSide });
+  const r = new THREE.Mesh(new THREE.CircleGeometry(1,64).rotateX(-Math.PI/2), m);
+  r.position.y=.03+i*.004; r.visible=false; scene.add(r);
+  rings.push({ mesh:r, mat:m, life:0, str:1 });
+}
+let ringIdx=0;
+function spawnRing(s){ const r=rings[ringIdx]; r.life=1; r.str=s; r.mesh.visible=true; ringIdx=(ringIdx+1)%rings.length; }
+
+/* --- конфетти-частицы --- */
+const N=240, cPos=new Float32Array(N*3), cCol=new Float32Array(N*3);
+const cR=[], cA=[], cY=[], cV=[], cS=[];
+for(let i=0;i<N;i++){ cR.push(1+Math.random()*6.5); cA.push(Math.random()*7); cY.push(.2+Math.random()*8.5);
+  cV.push(.25+Math.random()*.5); cS.push((Math.random()<.5?-1:1)*(.12+Math.random()*.3)); }
+const confGeo = new THREE.BufferGeometry();
+confGeo.setAttribute('position', new THREE.BufferAttribute(cPos,3));
+confGeo.setAttribute('color',    new THREE.BufferAttribute(cCol,3));
+{ const cv=document.createElement('canvas'); cv.width=cv.height=64;
+  const x=cv.getContext('2d'), g=x.createRadialGradient(32,32,0,32,32,30);
+  g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.4,'rgba(255,255,255,.6)'); g.addColorStop(1,'rgba(255,255,255,0)');
+  x.fillStyle=g; x.fillRect(0,0,64,64);
+  const tex=new THREE.CanvasTexture(cv);
+  var confMat = new THREE.PointsMaterial({ size:.13, map:tex, vertexColors:true, transparent:true, opacity:.85,
+    depthWrite:false, blending:THREE.AdditiveBlending }); }
+const confetti = new THREE.Points(confGeo, confMat);
+confetti.frustumCulled=false; scene.add(confetti);
+
+function setConfettiPalette(pal){
+  const c=new THREE.Color();
+  for(let i=0;i<N;i++){ c.set(pal[i%pal.length]); cCol[i*3]=c.r; cCol[i*3+1]=c.g; cCol[i*3+2]=c.b; }
+  confGeo.attributes.color.needsUpdate=true;
+}
+
+/* ================= ХОМЯК (примитивы → иерархия суставов) ================= */
+const MAT = {
+  fur:   std({ color:0xd99a52, roughness:.85, envMapIntensity:.6 }),
+  belly: std({ color:0xf6e7c8, roughness:.9,  envMapIntensity:.4 }),
+  earIn: std({ color:0xf2b39d, roughness:.8 }),
+  eye:   std({ color:0x1a1114, roughness:.25, envMapIntensity:1.2 }),
+  nose:  std({ color:0x8c4f43, roughness:.6 }),
+  glint: std({ color:0xffffff, roughness:.1 }),
+};
+function limb(r, len, mat, pawMat){
+  const g = new THREE.Group();
+  const cap = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 12), mat);
+  cap.position.y = -len/2; g.add(cap);
+  const paw = new THREE.Mesh(new THREE.SphereGeometry(r*1.25, 14, 10), pawMat);
+  paw.position.y = -(len + r*.9); g.add(paw);
+  return g;
+}
+const H = {};
+{ // сборка: лицом к локальному +Z (holder повернёт наружу от стержня)
+  const root = new THREE.Group(), core = new THREE.Group(); root.add(core);
+
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(.46,32,24), MAT.fur);
+  torso.scale.set(.95,.88,1.02); core.add(torso);
+
+  const belly = new THREE.Mesh(new THREE.SphereGeometry(.34,24,18), MAT.belly);
+  belly.scale.set(.72,.75,.5); belly.position.set(0,-.06,.27); core.add(belly);
+
+  const headG = new THREE.Group(); headG.position.set(0,.5,.14); core.add(headG);
+  const headS = new THREE.Mesh(new THREE.SphereGeometry(.3,28,20), MAT.fur);
+  headS.scale.set(1,.96,1); headG.add(headS);
+
+  const snout = new THREE.Mesh(new THREE.SphereGeometry(.12,14,10), MAT.belly);
+  snout.scale.set(.95,.78,.85); snout.position.set(0,-.05,.26); headG.add(snout);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(.042,10,8), MAT.nose);
+  nose.position.set(0,-.03,.37); headG.add(nose);
+
+  [-1,1].forEach(s=>{
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(.05,12,10), MAT.eye);
+    eye.position.set(.135*s,.05,.245); headG.add(eye);
+    const gl = new THREE.Mesh(new THREE.SphereGeometry(.016,8,6), MAT.glint);
+    gl.position.set(.155*s,.07,.29); headG.add(gl);
+    const chk = new THREE.Mesh(new THREE.SphereGeometry(.12,14,10), MAT.belly);
+    chk.scale.set(1,.85,.8); chk.position.set(.2*s,-.14,.2); headG.add(chk);
+
+    const ear = new THREE.Group(); ear.position.set(.17*s,.24,-.02);
+    ear.rotation.z=-.4*s; ear.rotation.x=-.15;
+    const eo = new THREE.Mesh(new THREE.SphereGeometry(.11,14,10), MAT.fur);
+    eo.scale.set(.85,.95,.6); ear.add(eo);
+    const ei = new THREE.Mesh(new THREE.SphereGeometry(.062,10,8), MAT.earIn);
+    ei.position.z=.05; ei.scale.set(1,.9,.5); ear.add(ei);
+    headG.add(ear);
+  });
+
+  const tail = new THREE.Group(); tail.position.set(0,.1,-.42); core.add(tail);
+  const tm = new THREE.Mesh(new THREE.SphereGeometry(.11,12,10), MAT.fur);
+  tm.scale.set(1,1,.8); tail.add(tm);
+
+  H.armA = limb(.09,.5,MAT.fur,MAT.belly); H.armA.position.set(.38,.30,.06); core.add(H.armA);
+  H.armB = limb(.09,.5,MAT.fur,MAT.belly); H.armB.position.set(-.38,.30,.06); core.add(H.armB);
+  H.legA = limb(.10,.4,MAT.fur,MAT.fur);   H.legA.position.set(.2,-.35,-.02); core.add(H.legA);
+  H.legB = limb(.10,.4,MAT.fur,MAT.fur);   H.legB.position.set(-.2,-.35,-.02); core.add(H.legB);
+
+  root.traverse(o=>{ if(o.isMesh) o.castShadow=true; });
+  H.root=root; H.core=core; H.headG=headG; H.tail=tail;
+
+  const spin = new THREE.Group(); scene.add(spin);
+  const holder = new THREE.Group();
+  // морда (+Z локальной сцены хомяка) смотрит в трубу: повернули на -90°
+  holder.position.x=.72; holder.rotation.y=-Math.PI/2;
+  spin.add(holder); holder.add(root);
+  H.spin=spin; H.holder=holder;
+}
+
+/* ================= ХОРЕОГРАФИЯ (таргеты поз на бит) ================= */
+const S=(a,b,x)=>{ const t=THREE.MathUtils.clamp((x-a)/(b-a),0,1); return t*t*(3-2*t); };
+const offB=(t,half=.5)=>Math.exp(-4.5*((t+half)%1));
+
+const MOVES = {
+  groove:{ name:'ГРУВ', beats:8, f(t){
+    const pk=Math.exp(-5*(t%1)), alt=(Math.floor(t)%2)?1:-1;
+    return { height:2.42+.17*pk, spin:0, lean:.16*alt, squash:1+.11*pk,
+      hx:-.12+.32*pk, hy:.22*alt, hz:-.18*alt,
+      aAx: alt>0?2.45:-.5,  aAz: alt>0?.75:.3,
+      aBx: alt<0?2.45:-.5,  aBz: alt<0?-.75:-.3,
+      lAx:1.9+.5*pk,  lAz:.16, lBx:1.9+.5*offB(t), lBz:-.16 }; }},
+
+  wrap:{ name:'ВИРАЖ', beats:8, f(t,n){
+    const m=t/n, rmp=S(0,.28,m)*(1-S(.78,1,m)), pk=Math.exp(-4*(t%1));
+    return { height:2.3+1.6*m, spin:10*rmp, lean:.1*rmp, squash:1+.06*pk,
+      hx:-.3*rmp, hy:0, hz:.12*rmp,
+      aAx:2.3, aAz:-.5, aBx:2.05, aBz:.5,
+      lAx:1.9+.45*pk, lAz:.16, lBx:1.9+.45*offB(t), lBz:-.16 }; }},
+
+  dab:{ name:'ДЭБ', beats:4, f(t){
+    const pop=S(0,.25,t), p=Math.exp(-6*(t%1));
+    return { height:2.75-.18*pop, spin:0, lean:.3*pop, squash:1+.09*p,
+      hx:.95*pop, hy:-.45*pop, hz:.15*pop,
+      aAx:-2.7, aAz:.85, aBx:-1.35, aBz:-.15,
+      lAx:1.6, lAz:.18, lBx:1.6, lBz:-.18 }; }},
+
+  hop:{ name:'ПРЫГУН', beats:4, f(t){
+    const b=t%1, air=Math.sin(Math.PI*b), land=Math.exp(-7*b);
+    return { height:2.3+.55*air, spin:0, lean:-.12*air, squash:1-.24*land+.16*air,
+      hx:-.3*air, hy:0, hz:.1*air,
+      aAx:2.8, aAz:.9, aBx:2.8, aBz:-.9,
+      lAx:2.2-.95*air, lAz:.2, lBx:2.2-.95*air, lBz:-.2 }; }},
+
+  windmill:{ name:'МЕЛЬНИЦА', beats:8, f(t,n){
+    const m=t/n, rmp=S(0,.3,m)*(1-S(.85,1,m));
+    return { height:3.1+.12*Math.sin(t*Math.PI*2), spin:6.5*rmp, lean:-.2*rmp, squash:1,
+      hx:.15, hy:0, hz:0,
+      aAx:.1, aAz:1.48, aBx:.1, aBz:-1.48,
+      lAx:2.0, lAz:.16, lBx:2.0, lBz:-.16 }; }},
+};
+const SEQ=['groove','wrap','dab','hop','windmill'];
+let cur='groove', moveT=0, auto=true;
+
+/* текущая поза — демпфируется к таргетам */
+const P = { height:2.5, spin:0, lean:0, squash:1, hx:.08, hy:0, hz:0,
+            aAx:-.35, aAz:.25, aBx:-.35, aBz:-.25, lAx:1.7, lAz:.16, lBx:1.7, lBz:-.16 };
+
+const moveNameEl=$('moveName');
+function setMove(id){
+  cur=id; moveT=0;
+  const el=$('[data-move="'+id+'"]'); if(el) el.classList.add('active');
+  moveNameEl.textContent = MOVES[id].name;
+  moveNameEl.classList.remove('pop'); void moveNameEl.offsetWidth; moveNameEl.classList.add('pop');
+}
+document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('click',()=>{
+  const id=b.dataset.move;
+  if(id==='auto'){ auto=true; setMove(SEQ[(SEQ.indexOf(cur)+1)%SEQ.length]); }
+  else { auto=false; setMove(id); }
+  document.querySelectorAll('[data-move]').forEach(x=>x.classList.toggle('active', x===b));
+}));
+
+/* ================= ПАЛИТРЫ ================= */
+const THEMES=[
+  { id:'неон',   a:'#ff2fb9', b:'#1fd9ff', w:'#ffb35c' },
+  { id:'клуб',   a:'#6c4dff', b:'#3dffb0', w:'#ffc26e' },
+  { id:'закат',  a:'#ff5c3a', b:'#ffc24d', w:'#ff9e7d' },
+];
+function applyTheme(i){
+  const t=THEMES[i], r=document.documentElement.style;
+  r.setProperty('--acc',t.a); r.setProperty('--acc2',t.b);
+  lightA.color.set(t.a); lightB.color.set(t.b); lightW.color.set(t.w);
+  beamA.mat.color.set(t.a); beamB.mat.color.set(t.b);
+  glowRingM.emissive.set(t.a); tipMat.emissive.set(t.w);
+  posts.forEach(p=>p.mat.emissive.set(p.i%2?t.b:t.a));
+  rings.forEach((rg,j)=>rg.mat.color.set(j%2?t.b:t.a));
+  setConfettiPalette([t.a,t.b,t.w,'#ffffff']);
+  drawFloor(t.a,t.b); floorTex.needsUpdate=true;
+}
+{ const box=$('swatches');
+  THEMES.forEach((t,i)=>{
+    const b=document.createElement('button');
+    b.className='swatch'+(i===0?' active':''); b.title=t.id;
+    b.style.background=`conic-gradient(${t.a} 0 50%, ${t.b} 50% 100%)`;
+    b.addEventListener('click',()=>{ applyTheme(i);
+      box.querySelectorAll('.swatch').forEach(x=>x.classList.toggle('active',x===b)); });
+    box.appendChild(b);
+  });
+}
+
+/* ================= ЗВУК (синтез: кик + хэт) ================= */
+let AC=null, master=null, noiseBuf=null, soundOn=false;
+function ensureAC(){
+  if(AC){ if(AC.state==='suspended') AC.resume(); return; }
+  const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return;
+  AC=new Ctx(); master=AC.createGain(); master.gain.value=.5; master.connect(AC.destination);
+  noiseBuf=AC.createBuffer(1, AC.sampleRate*.3|0, AC.sampleRate);
+  const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+}
+function kick(){ if(!soundOn||!AC) return; const t0=AC.currentTime;
+  const o=AC.createOscillator(), g=AC.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(150,t0); o.frequency.exponentialRampToValueAtTime(42,t0+.13);
+  g.gain.setValueAtTime(.8,t0); g.gain.exponentialRampToValueAtTime(.001,t0+.26);
+  o.connect(g).connect(master); o.start(t0); o.stop(t0+.3); }
+function hat(delay,vol=.2,dur=.04){ if(!soundOn||!AC) return; const t0=AC.currentTime+delay;
+  const s=AC.createBufferSource(); s.buffer=noiseBuf;
+  const f=AC.createBiquadFilter(); f.type='highpass'; f.frequency.value=6500;
+  const g=AC.createGain(); g.gain.setValueAtTime(vol,t0); g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+  s.connect(f).connect(g).connect(master); s.start(t0); s.stop(t0+dur+.02); }
+
+const soundBtn=$('soundBtn');
+soundBtn.addEventListener('click',()=>{ ensureAC(); soundOn=!soundOn;
+  soundBtn.classList.toggle('on',soundOn);
+  soundBtn.innerHTML=`<span class="dot"></span>Звук: ${soundOn?'вкл':'выкл'}`; });
+
+/* ================= КАМЕРА (свой орбит-контрол с демпфированием) ================= */
+const target=new THREE.Vector3(0,2.9,0);
+const sph={ theta:.65, phi:1.08, r:13.5 }, sphT={ theta:.65, phi:1.08, r:9.4 }; // старт дальше → долл-ин
+let lastInteract=performance.now();
+
+const pts=new Map(); let downX=0,downY=0,moved=false,pinchPrev=0;
+canvas.addEventListener('pointerdown',e=>{
+  canvas.setPointerCapture(e.pointerId);
+  pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pts.size===1){ moved=false; downX=e.clientX; downY=e.clientY; }
+  if(pts.size===2){ const a=[...pts.values()]; pinchPrev=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); }
+  canvas.classList.add('grabbing'); lastInteract=performance.now();
+});
+canvas.addEventListener('pointermove',e=>{
+  const p=pts.get(e.pointerId); if(!p) return;
+  const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+  lastInteract=performance.now();
+  if(Math.hypot(e.clientX-downX,e.clientY-downY)>7) moved=true;
+  if(pts.size===1){
+    sphT.theta -= dx*.0045;
+    sphT.phi = THREE.MathUtils.clamp(sphT.phi - dy*.0035, .5, 1.42);
+  } else if(pts.size===2){
+    const a=[...pts.values()], d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
+    if(pinchPrev>0) sphT.r=THREE.MathUtils.clamp(sphT.r*pinchPrev/d, 4, 17);
+    pinchPrev=d;
+  }
+});
+const endPtr=e=>{ pts.delete(e.pointerId); canvas.classList.remove('grabbing'); };
+canvas.addEventListener('pointerup',e=>{
+  if(!moved && e.button===0) tryBoostAt(e.clientX,e.clientY);
+  endPtr(e);
+});
+canvas.addEventListener('pointercancel',endPtr);
+canvas.addEventListener('wheel',e=>{ e.preventDefault(); lastInteract=performance.now();
+  sphT.r=THREE.MathUtils.clamp(sphT.r*Math.exp(e.deltaY*.0012),4,17); },{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+/* ================= КЛИК ПО ХОМЯКУ → БУСТ ================= */
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+let boostSpin=0, flash=0, swirlBoost=0;
+function tryBoostAt(px,py){
+  ndc.set(px/innerWidth*2-1, -(py/innerHeight)*2+1);
+  ray.setFromCamera(ndc,camera);
+  H.spin.updateMatrixWorld(true);
+  if(ray.intersectObjects([H.spin],true).length) boost(px,py);
+}
+const WORDS=['ВАУ!','×100','ОГОНЬ 🔥','HOFFA!','+SPIN'];
+function boost(px,py){
+  boostSpin+=13; flash=1; swirlBoost=4; spawnRing(2.2);
+  for(let i=0;i<5;i++) hat(i*.03,.25,.05);
+  const f=document.createElement('span'); f.className='fl';
+  f.textContent=WORDS[Math.random()*WORDS.length|0];
+  f.style.left=px+'px'; f.style.top=py+'px';
+  document.body.appendChild(f); setTimeout(()=>f.remove(),950);
+}
+addEventListener('keydown',e=>{
+  if(e.code==='Space' && e.target===document.body){
+    e.preventDefault(); lastInteract=performance.now();
+    const v=new THREE.Vector3(); H.holder.getWorldPosition(v); v.y+=.4; v.project(camera);
+    boost((v.x*.5+.5)*innerWidth, (-v.y*.5+.5)*innerHeight);
+  }
+});
+
+/* ================= BPM / РЕСАЙЗ ================= */
+let bpm=128;
+$('bpm').addEventListener('input',e=>{ bpm=+e.target.value; $('bpmVal').textContent=bpm+' BPM'; });
+addEventListener('resize',()=>{
+  camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+/* ================= ГЛАВНЫЙ ЦИКЛ ================= */
+const clock=new THREE.Clock();
+let beatTime=0,lastBi=-1,pulse=0;
+let frames=0,fAcc=0;
+const fpsEl=$('fps'), tmpV=new THREE.Vector3();
+
+function onBeat(bi){
+  pulse=1; spawnRing(bi%4===0?1.25:.75);
+  kick(); hat(60/bpm/2,.18);
+}
+
+applyTheme(0); drawFloor(THEMES[0].a,THEMES[0].b); floorTex.needsUpdate=true; setMove('groove');
+
+renderer.setAnimationLoop(()=>{
+  const dt=Math.min(clock.getDelta(),.066), t=clock.elapsedTime;
+
+  /* --- битовые часы --- */
+  beatTime += dt*bpm/60;
+  const bi=Math.floor(beatTime);
+  if(bi!==lastBi){ lastBi=bi; onBeat(bi); }
+  pulse*=Math.exp(-5.5*dt); flash*=Math.exp(-3.2*dt);
+  boostSpin*=Math.exp(-1.6*dt); swirlBoost*=Math.exp(-1.8*dt);
+
+  /* --- хореография: таргеты → демпфирование --- */
+  moveT += dt*bpm/60;
+  const M=MOVES[cur];
+  if(moveT>=M.beats){
+    moveT%=M.beats;
+    if(auto) setMove(SEQ[(SEQ.indexOf(cur)+1)%SEQ.length]);
+  }
+  const tg=M.f(moveT,M.beats);
+  for(const k in P){
+    const lam = k==='spin'?5:12, tv=(k in tg)?tg[k]:P[k];
+    P[k]+= (tv-P[k])*(1-Math.exp(-lam*dt));
+  }
+
+  /* --- применение позы --- */
+  H.spin.rotation.y += (P.spin+boostSpin)*dt;
+  H.spin.position.y  = P.height;
+  H.root.rotation.x  = P.lean;
+  const sq=P.squash; H.core.scale.set(1+(1-sq)*.5, sq, 1+(1-sq)*.5);
+  H.headG.rotation.set(P.hx,P.hy,P.hz);
+  H.armA.rotation.set(P.aAx,0,P.aAz); H.armB.rotation.set(P.aBx,0,P.aBz);
+  H.legA.rotation.set(P.lAx,0,P.lAz); H.legB.rotation.set(P.lBx,0,P.lBz);
+  H.tail.rotation.z = Math.sin(beatTime*Math.PI*2)*(.3+Math.min(Math.abs(P.spin),8)*.15);
+
+  /* --- живая обстановка --- */
+  lightA.position.set(Math.cos(t*.5)*4.2, 3.6+Math.sin(t*1.3)*.7, Math.sin(t*.5)*4.2);
+  lightB.position.set(-Math.cos(t*.42+2)*3.4, 5.8+Math.cos(t*1.1)*.6, -Math.sin(t*.42+2)*3.4);
+  lightA.intensity=BASE.A*(1+flash*.9);
+  lightB.intensity=BASE.B*(1+flash*.9);
+  lightW.intensity=BASE.W*(1+flash*.7);
+
+  beamA.g.rotation.y += dt*.5; beamB.g.rotation.y -= dt*.4;
+  spot.g.position.y = H.spin.position.y + 2.9;
+  disco.userData.ball.rotation.y += dt*.4;
+  disco.rotation.z = Math.sin(t*.7)*.06;
+
+  glowRingM.emissiveIntensity=1.2+2.8*pulse;
+  tipMat.emissiveIntensity=1+3*pulse;
+  posts.forEach(p=>p.mat.emissiveIntensity=.7+1.4*(.5+.5*Math.sin(t*2+p.i))*(0.6+pulse));
+
+  rings.forEach(r=>{ if(r.life>0){ r.life-=dt*1.3; const s=.6+(1-Math.max(r.life,0))*2.8*r.str;
+    r.mesh.scale.setScalar(s); r.mat.opacity=Math.max(r.life,0)*.7; }});
+
+  for(let i=0;i<N;i++){
+    cA[i]+=dt*cS[i]*(1+swirlBoost); cY[i]+=dt*cV[i]; if(cY[i]>9) cY[i]=.2;
+    cPos[i*3]=Math.cos(cA[i])*cR[i]; cPos[i*3+1]=cY[i]; cPos[i*3+2]=Math.sin(cA[i])*cR[i];
+  }
+  confGeo.attributes.position.needsUpdate=true;
+
+  /* --- камера: демпфирование + медленный авто-облёт при бездействии --- */
+  if(performance.now()-lastInteract>5000 && pts.size===0) sphT.theta+=dt*.07;
+  const k=1-Math.exp(-6*dt);
+  sph.theta+=(sphT.theta-sph.theta)*k; sph.phi+=(sphT.phi-sph.phi)*k; sph.r+=(sphT.r-sph.r)*k;
+  const sp=Math.sin(sph.phi);
+  camera.position.set(target.x+sph.r*sp*Math.sin(sph.theta), target.y+sph.r*Math.cos(sph.phi),
+                      target.z+sph.r*sp*Math.cos(sph.theta));
+  camera.lookAt(target);
+
+  renderer.render(scene,camera);
+
+  frames++; fAcc+=dt;
+  if(fAcc>=.5){ fpsEl.textContent=Math.round(frames/fAcc)+' FPS'; frames=0; fAcc=0; }
+});
+</script>
+</body>
+</html>

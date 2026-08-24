@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вкусно-Космические — фермерские огурцы к сбору 24 июня</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..600&family=Manrope:wght@400..800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#F3EDDD;
+  --paper-2:#ECE3CC;
+  --cream:#FBF6EA;
+  --ink:#17240D;
+  --ink-soft:#454f39;
+  --green-deep:#1C3A1E;
+  --green-mid:#3E7A3B;
+  --green-bright:#8FBF47;
+  --lime:#DCED6B;
+  --tomato:#DF4B2B;
+  --gold:#E9A93B;
+  --shadow:0 1px 0 rgba(255,255,255,.5) inset, 0 24px 48px -30px rgba(23,36,13,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:"Manrope",system-ui,sans-serif;
+  line-height:1.55;font-size:clamp(15px,1vw + .6rem,17px);
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;line-height:.98;font-weight:560;letter-spacing:-.01em}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+::selection{background:var(--lime);color:var(--ink)}
+
+/* ============ GRAIN + PROGRESS ============ */
+.grain{position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E");}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--green-mid),var(--lime));z-index:10000}
+
+/* ============ LAYOUT ============ */
+.wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(1.1rem,5vw,3.2rem)}
+section{position:relative}
+.eyebrow{font-family:"Space Mono",monospace;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--green-mid);display:inline-flex;align-items:center;gap:.6em}
+.eyebrow::before{content:"";width:1.4em;height:1px;background:currentColor;display:inline-block}
+
+/* ============ BUTTONS / TAGS ============ */
+.btn{font-family:"Manrope",sans-serif;font-weight:800;border:none;cursor:pointer;transition:.35s cubic-bezier(.2,.8,.2,1);position:relative}
+.btn-primary{background:var(--green-deep);color:var(--cream);padding:1.05rem 1.7rem;border-radius:999px;font-size:.98rem;box-shadow:0 14px 30px -12px rgba(28,58,30,.7)}
+.btn-primary:hover{transform:translateY(-3px);background:#244a26}
+.btn-primary::after{content:"→";margin-left:.5em;display:inline-block;transition:transform .35s}
+.btn-primary:hover::after{transform:translateX(5px)}
+.btn-ghost{background:transparent;color:var(--ink);padding:1.05rem 1.6rem;border-radius:999px;font-size:.98rem;border:2px solid var(--ink)}
+.btn-ghost:hover{background:var(--ink);color:var(--cream)}
+.tag{font-family:"Space Mono",monospace;font-size:.74rem;padding:.35em .8em;border-radius:999px;background:#fff;color:var(--green-deep);border:1.5px solid rgba(28,58,30,.18);display:inline-block}
+.price{font-family:"Fraunces",serif;font-weight:600}
+
+/* ============ HEADER ============ */
+header{position:sticky;top:0;z-index:900;transition:.4s;border-bottom:1px solid transparent}
+header.scrolled{background:rgba(243,237,221,.85);backdrop-filter:blur(12px);border-bottom-color:rgba(23,36,13,.12)}
+.nav{display:flex;align-items:center;justify-content:space-between;height:clamp(60px,8vw,78px)}
+.logo{font-family:"Fraunces",serif;font-weight:640;font-size:1.35rem;display:flex;align-items:center;gap:.4em}
+.logo b{color:var(--green-mid);transform:rotate(-8deg) translateY(2px);display:inline-block;font-size:.9em}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{font-weight:600;font-size:.94rem;position:relative;padding:.3em 0}
+.nav-links a::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--green-mid);transform:scaleX(0);transform-origin:right;transition:.4s}
+.nav-links a:hover::after{transform:scaleX(1);transform-origin:left}
+.nav-cta{font-size:.86rem;padding:.7em 1.25em}
+
+/* ============ HERO ============ */
+.hero{padding-top:clamp(2rem,5vw,4rem);overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center;padding-bottom:clamp(2rem,6vw,5rem)}
+.hero-title{font-size:clamp(3.2rem,10vw,7.4rem);margin:.4em 0 .5em;letter-spacing:-.03em}
+.hero-title .word{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em;margin-bottom:-.06em}
+.hero-title .word span{display:inline-block;transform:translateY(112%);transition:transform 1s cubic-bezier(.2,.9,.2,1)}
+.hero-title.in .word:nth-child(1) span{transition-delay:.05s;transform:none}
+.hero-title.in .word:nth-child(2) span{transition-delay:.16s;transform:none}
+.hero-title.in .word:nth-child(3) span{transition-delay:.27s;transform:none}
+.hero-title .accent{color:var(--green-mid);font-style:italic;font-weight:480}
+.hero-lead{max-width:46ch;color:var(--ink-soft);font-size:1.05rem;margin-bottom:1.6rem}
+.hero-actions{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center;margin-bottom:2rem}
+.stickers{position:absolute;font-family:"Space Mono",monospace;font-weight:700;background:var(--lime);color:var(--ink);padding:.45em .8em;border-radius:12px;box-shadow:3px 3px 0 var(--ink);font-size:.8rem;z-index:5}
+.sticker-1{top:-.6rem;left:52%;transform:rotate(-7deg)}
+.sticker-2{bottom:24%;left:96%;background:var(--tomato);color:#fff;transform:rotate(6deg)}
+.hero-stats{display:flex;flex-wrap:wrap;gap:clamp(1.2rem,3vw,2.6rem);border-top:1px solid rgba(23,36,13,.18);padding-top:1.4rem}
+.hstat b{font-family:"Fraunces",serif;font-size:clamp(1.7rem,3.5vw,2.4rem);display:block;line-height:1;color:var(--green-deep)}
+.hstat span{font-size:.82rem;color:var(--ink-soft);max-width:16ch;display:block;margin-top:.2em}
+
+.hero-media{position:relative;min-height:min(70vh,540px)}
+.frame{position:absolute;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);border:3px solid var(--cream)}
+.frame img{width:100%;height:100%;object-fit:cover}
+.kb img{animation:kb 22s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1.05) translate(0,0)}to{transform:scale(1.2) translate(-3%,-4%)}}
+.f-a{inset:0 8% 16% 0;z-index:2}
+.f-b{width:52%;height:56%;right:-2%;bottom:-2%;z-index:3;animation-delay:-8s}
+.f-c{width:34%;height:40%;left:-4%;top:-4%;z-index:1;border-color:var(--green-deep)}
+.frame .cap{position:absolute;left:.6rem;top:.5rem;font-family:"Space Mono",monospace;font-size:.72rem;background:rgba(28,58,30,.85);color:#fff;padding:.3em .6em;border-radius:8px;z-index:4}
+.spin-badge{position:absolute;right:-1%;top:8%;z-index:6;width:clamp(96px,17vw,132px);height:clamp(96px,17vw,132px)}
+.spin-badge svg{width:100%;height:100%;animation:spin 24s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-badge text{font-family:"Space Mono",monospace;font-size:8.4px;letter-spacing:.14em;text-transform:uppercase;fill:var(--green-deep)}
+.spin-center{position:absolute;inset:0;display:grid;place-items:center;font-size:2rem}
+
+/* ============ MARQUEE ============ */
+.marquee{background:var(--green-deep);color:var(--cream);overflow:hidden;padding:.95rem 0;border-block:3px solid var(--ink)}
+.mq-track{display:flex;gap:2.4rem;width:max-content;animation:mq 34s linear infinite;font-family:"Fraunces",serif;font-size:1.5rem;font-weight:480}
+.marquee:hover .mq-track{animation-play-state:paused}
+.mq-track span{display:inline-flex;align-items:center;gap:2.4rem}
+.mq-track em{color:var(--lime);font-style:normal}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ============ SECTION HEADS ============ */
+.sec-pad{padding-block:clamp(3.5rem,8vw,7rem)}
+.head{max-width:60ch;margin-bottom:2.6rem}
+.head h2{font-size:clamp(2.1rem,5.4vw,3.9rem);margin:.35em 0 .3em}
+.head p{color:var(--ink-soft);font-size:1.08rem;max-width:52ch}
+
+/* ============ STICKY SPLIT (Почему) ============ */
+.split{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(2rem,6vw,5rem);align-items:start}
+.sticky-col{position:sticky;top:96px}
+.countdown-card{background:var(--cream);border:2px solid var(--ink);border-radius:20px;padding:1.4rem 1.5rem;box-shadow:var(--shadow)}
+.cd-label{font-family:"Space Mono",monospace;font-size:.78rem;text-transform:uppercase;letter-spacing:.16em;color:var(--tomato);margin-bottom:1rem}
+.cd-row{display:flex;gap:.7rem}
+.cd-cell{flex:1;background:var(--paper-2);border-radius:12px;padding:.9rem .4rem;text-align:center;border:1.5px solid rgba(23,36,13,.1)}
+.cd-num{font-family:"Fraunces",serif;font-weight:700;font-size:clamp(1.8rem,4vw,2.6rem);line-height:1;color:var(--green-deep)}
+.cd-lab{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft);margin-top:.35em}
+.cd-note{margin-top:1rem;font-size:.9rem;color:var(--ink-soft);display:flex;gap:.7em}
+
+.reasons{display:grid;gap:1.6rem}
+.reason{background:var(--cream);border-radius:18px;padding:clamp(1.4rem,3vw,2.2rem);box-shadow:var(--shadow);border-left:5px solid var(--green-mid);transition:.4s}
+.reason:hover{transform:translateX(6px)}
+.reason .rnum{font-family:"Space Mono",monospace;color:var(--tomato);font-weight:700;font-size:.85rem;letter-spacing:.1em}
+.reason h3{font-size:clamp(1.4rem,3vw,2rem);margin:.35em 0 .5em;display:flex;align-items:center;gap:.5em}
+.reason p{color:var(--ink-soft)}
+
+/* ============ STATS BAND ============ */
+.stats-band{background:var(--green-deep);color:var(--cream)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(1rem,3vw,2.5rem);padding-block:clamp(3rem,7vw,5rem)}
+.stat b{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(2.8rem,7vw,5rem);line-height:.9;display:block;color:var(--lime)}
+.stat span{display:block;margin-top:.6em;font-size:.94rem;opacity:.85;max-width:18ch}
+
+/* ============ SORTS / CARD STACK ============ */
+.sorts .head p{margin-bottom:.5rem}
+.card-stack{position:relative}
+.scard{display:grid;grid-template-columns:230px 1fr auto;gap:clamp(1.2rem,3vw,2.4rem);align-items:center;background:var(--cream);border:2px solid var(--ink);border-radius:22px;padding:1.6rem;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.scard:nth-child(even){transform:rotate(-1deg);margin-inline-start:auto;width:97%}
+.scard:nth-child(odd){transform:rotate(1deg)}
+.scard-img{border-radius:14px;overflow:hidden;height:200px;border:2px solid rgba(23,36,13,.15)}
+.scard-img img{width:100%;height:100%;object-fit:cover}
+.scard-body h3{font-size:clamp(1.7rem,4vw,2.6rem);display:flex;align-items:center;gap:.6em;flex-wrap:wrap}
+.scard-meta{font-family:"Space Mono",monospace;font-size:.85rem;color:var(--ink-soft);margin:.4em 0 .9em;display:flex;flex-wrap:wrap;gap:.5em 1.3em}
+.scard-desc{color:var(--ink-soft);max-width:52ch}
+.scard-side{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:.6rem}
+.rated{font-size:.9rem;color:var(--gold)}
+.add-btn{background:var(--green-deep);color:#fff;padding:.7em 1.2em;border-radius:999px;font-weight:800;font-size:.85rem;cursor:pointer;border:none;transition:.3s}
+.add-btn:hover{transform:scale(1.06)}
+
+/* ============ CRAFT / ZIGZAG ============ */
+.craft-list{display:grid;gap:clamp(2rem,5vw,4rem);counter-reset:c}
+.step{display:grid;grid-template-columns:1fr 1fr;gap:clamp(1.5rem,4vw,3.5rem);align-items:center}
+.step:nth-child(even) .step-media{order:-1}
+.step-num{font-family:"Space Mono",monospace;color:var(--tomato);letter-spacing:.2em;font-size:.85rem;margin-bottom:.6em;display:block}
+.step h3{font-size:clamp(1.7rem,4vw,2.7rem);margin-bottom:.6em}
+.step p{color:var(--ink-soft);max-width:46ch}
+.step-media{border-radius:18px;overflow:hidden;height:min(52vh,440px);box-shadow:var(--shadow)}
+.step-media img{width:100%;height:100%;object-fit:cover}
+
+/* ============ GALLERY (postcards) ============ */
+.gallery-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(1rem,3vw,2.4rem);padding-top:1rem}
+.postcard{background:#fff;padding:.85rem .85rem 0;border-radius:6px;box-shadow:var(--shadow);transform:rotate(var(--rot));transition:.4s;width:min(78%,300px)}
+.postcard:nth-child(even){width:min(60%,240px)}
+.postcard:hover{transform:rotate(0) translateY(-10px) scale(1.03);z-index:5}
+.pc-img{height:220px;overflow:hidden;border-radius:4px}
+.pc-img img{width:100%;height:100%;object-fit:cover}
+.postcard figcaption{font-family:"Space Mono",monospace;font-size:.78rem;padding:.9em .3em;text-align:center;color:var(--ink-soft)}
+
+/* ============ REVIEWS (sticky notes) ============ */
+.reviews-grid{display:flex;flex-wrap:wrap;gap:clamp(1rem,2.5vw,2rem);justify-content:center}
+.note{background:var(--cream);border-radius:8px;padding:1.4rem 1.5rem;width:min(90%,330px);box-shadow:var(--shadow);transform:rotate(var(--rot));transition:.35s;position:relative;border-top:6px solid var(--green-mid)}
+.note:nth-child(2){border-color:var(--tomato)}.note:nth-child(3){border-color:var(--gold)}
+.note:nth-child(4){border-color:var(--lime)}.note:nth-child(5){border-color:var(--green-deep)}.note:nth-child(6){border-color:var(--tomato)}
+.note:hover{transform:rotate(0) scale(1.03);z-index:5}
+.note .stars{color:var(--gold);letter-spacing:.1em;margin-bottom:.5em}
+.note p{font-size:.98rem;line-height:1.5}
+.note .who{margin-top:1em;font-family:"Space Mono",monospace;font-size:.76rem;color:var(--ink-soft)}
+
+/* ============ FAQ ============ */
+.faq-item{border-bottom:2px solid rgba(23,36,13,.14);padding-block:1.1rem}
+.faq-q{width:100%;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:1rem;font-family:"Fraunces",serif;font-size:clamp(1.2rem,3vw,1.7rem);font-weight:560;text-align:left;padding:.4em 0}
+.faq-q .ic{flex-shrink:0;width:34px;height:34px;border-radius:999px;background:var(--green-deep);color:#fff;display:grid;place-items:center;font-size:1.3rem;transition:.4s}
+.faq-item.open .faq-q .ic{transform:rotate(45deg);background:var(--tomato)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .5s ease;color:var(--ink-soft)}
+.faq-item.open .faq-a{max-height:280px}
+.faq-a p{padding-top:.7em;max-width:64ch}
+
+/* ============ ORDER ============ */
+.order-band{background:var(--green-deep);color:var(--cream)}
+.order-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:clamp(2rem,5vw,4rem);align-items:center;padding-block:clamp(3rem,7vw,6rem)}
+.order-copy h2{font-size:clamp(2.1rem,5vw,3.6rem);color:#fff;margin:.3em 0}
+.order-copy p{opacity:.9;max-width:44ch;font-size:1.05rem}
+.order-features{list-style:none;margin-top:1.6rem;display:grid;gap:.7rem}
+.order-features li{display:flex;gap:.7em;align-items:center;font-weight:600}
+.order-features li::before{content:"✓";color:var(--lime);font-weight:800;background:rgba(255,255,255,.1);width:1.6em;height:1.6em;border-radius:999px;display:grid;place-items:center;font-size:.85rem}
+
+.calculator{background:var(--cream);color:var(--ink);border-radius:24px;padding:clamp(1.5rem,3vw,2.4rem);box-shadow:0 30px 60px -20px rgba(0,0,0,.5)}
+.calc-title{font-family:"Space Mono",monospace;font-size:.8rem;text-transform:uppercase;letter-spacing:.16em;color:var(--green-mid);margin-bottom:1.4rem}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 0;border-bottom:1px dashed rgba(23,36,13,.2)}
+.opt-info b{font-family:"Fraunces",serif;font-size:1.15rem;display:block}
+.opt-info small{color:var(--ink-soft);font-size:.82rem}
+.stepper{display:flex;align-items:center;gap:.7rem}
+.st-btn{width:34px;height:34px;border-radius:999px;border:2px solid var(--green-deep);background:#fff;font-size:1.2rem;font-weight:800;color:var(--green-deep);cursor:pointer;display:grid;place-items:center;transition:.2s}
+.st-btn:hover{background:var(--green-deep);color:#fff}
+.st-count{min-width:1.6em;text-align:center;font-family:"Fraunces",serif;font-weight:700;font-size:1.3rem}
+
+.delivery-row{display:flex;gap:.8rem;margin-top:1.4rem;flex-wrap:wrap}
+.del-opt{flex:1;min-width:120px;border:2px solid rgba(23,36,13,.2);border-radius:14px;padding:.9rem;cursor:pointer;text-align:center;transition:.25s;background:#fff}
+.del-opt b{display:block;font-size:.95rem}
+.del-opt small{color:var(--ink-soft)}
+.del-opt.sel{border-color:var(--green-deep);background:rgba(143,191,71,.18);transform:translateY(-2px)}
+
+.calc-total{display:flex;justify-content:space-between;align-items:baseline;margin-top:1.6rem;padding-top:1.4rem;border-top:2px solid var(--ink)}
+.calc-total .lbl{font-weight:700}
+.calc-total .val{font-family:"Fraunces",serif;font-size:clamp(2rem,5vw,2.8rem);color:var(--green-deep)}
+.calc-btn{width:100%;margin-top:1.3rem;padding:1.2rem;border-radius:999px;background:var(--tomato);color:#fff;font-weight:800;font-size:1.05rem;cursor:pointer;border:none;transition:.3s}
+.calc-btn:hover{transform:translateY(-3px)}
+
+/* ============ FOOTER ============ */
+footer{background:var(--ink);color:var(--cream);padding-block:clamp(2.5rem,6vw,4rem) 1.5rem}
+.foot-grid{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;padding-bottom:2.5rem;border-bottom:1px solid rgba(255,255,255,.15)}
+.foot-brand .logo b{color:var(--lime)}
+.foot-brand p{opacity:.7;max-width:34ch;margin-top:.8em;font-size:.92rem}
+.news-form{display:flex;gap:.6rem;margin-top:1.2rem;flex-wrap:wrap}
+.news-form input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;padding:.7em 1em;border-radius:999px;min-width:200px;font-family:inherit}
+.news-form input::placeholder{color:rgba(255,255,255,.5)}
+.foot-cols{display:flex;gap:3rem;flex-wrap:wrap}
+.foot-col h4{font-family:"Space Mono",monospace;font-size:.76rem;text-transform:uppercase;letter-spacing:.14em;color:var(--lime);margin-bottom:1em}
+.foot-col a,.foot-col p{display:block;opacity:.85;margin-bottom:.5em;font-size:.92rem}
+.foot-col a:hover{color:#fff}
+.copy{text-align:center;padding-top:1.6rem;font-family:"Space Mono",monospace;font-size:.74rem;opacity:.55}
+
+/* ============ TOAST / FLOAT CTA / MODAL ============ */
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,140%);background:var(--green-deep);color:#fff;padding:.9rem 1.3rem;border-radius:999px;font-weight:700;z-index:10001;box-shadow:0 16px 32px -8px rgba(0,0,0,.4);transition:.5s cubic-bezier(.2,.9,.2,1)}
+.toast.show{transform:translate(-50%,0)}
+.float-cta{position:fixed;left:50%;bottom:22px;transform:translate(-50%,180%);z-index:9000;background:var(--green-deep);color:#fff;padding:.9em 1.6em;border-radius:999px;font-weight:800;box-shadow:0 14px 30px -8px rgba(0,0,0,.5);transition:.5s cubic-bezier(.2,.9,.2,1)}
+.float-cta.show{transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;z-index:10002;background:rgba(23,36,13,.6);backdrop-filter:blur(4px);display:none;place-items:center;padding:1.5rem}
+.modal.open{display:grid}
+.modal-card{background:var(--cream);border-radius:24px;max-width:520px;width:100%;padding:clamp(1.6rem,4vw,2.6rem);position:relative;border:3px solid var(--ink)}
+.modal-close{position:absolute;top:.9rem;right:1rem;background:none;border:none;font-size:1.8rem;cursor:pointer;color:var(--ink)}
+.modal-card h3{font-size:clamp(1.7rem,4vw,2.3rem);margin-bottom:.5em}
+.modal-sums{list-style:none;margin:1.2rem 0;padding-left:1.2rem;color:var(--ink-soft)}
+.modal-total{display:flex;justify-content:space-between;font-family:"Fraunces",serif;font-weight:700;font-size:1.4rem;border-top:2px solid var(--ink);padding-top:1em;margin-bottom:1.4rem}
+
+/* ============ REVEAL ============ */
+.reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .9s cubic-bezier(.2,.85,.25,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:960px){
+  .nav-links{display:none}
+  .hero-grid{grid-template-columns:1fr}
+  .hero-media{min-height:min(58vh,420px);margin-top:1rem}
+  .split{grid-template-columns:1fr}
+  .sticky-col{position:relative;top:0;margin-bottom:.5rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .step{grid-template-columns:1fr;gap:1.4rem}
+  .step:nth-child(even) .step-media{order:0}
+  .step-media{height:min(56vh,380px)}
+  .order-grid{grid-template-columns:1fr}
+}
+@media(max-width:720px){
+  .scard{grid-template-columns:1fr;gap:1rem;text-align:left}
+  .scard:nth-child(even),.scard:nth-child(odd){transform:none;width:100%;margin-inline-start:0}
+  .scard-img{height:230px}
+  .scard-side{text-align:left;align-items:flex-start;flex-direction:row;justify-content:space-between;width:100%}
+  .sticker-1,.sticker-2{display:none}
+  .hero-stats{gap:1.4rem}
+}
+
+/* ============ REDUCED MOTION ============ */
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+  .reveal,.hero-title .word span{opacity:1!important;transform:none!important}
+  .mq-track{animation:none}
+}
+</style>
+</head>
+<body id="top">
+<div class="grain"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ============ HEADER ============ -->
+<header id="header">
+  <div class="wrap nav">
+    <a href="#top" class="logo">Вкусно<b>·</b>Космические</a>
+    <nav><ul class="nav-links">
+      <li><a href="#why">Почему мы</a></li>
+      <li><a href="#sorts">Сортовые</a></li>
+      <li><a href="#craft">Выращивание</a></li>
+      <li><a href="#reviews">Отзывы</a></li>
+    </ul></nav>
+    <button class="btn btn-primary nav-cta" data-scroll="#order">Заказать сбор</button>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero wrap">
+  <span class="stickers sticker-1">−25% на первый заказ</span>
+  <span class="stickers sticker-2">сбор 24 июня</span>
+  <div class="hero-grid">
+    <div class="hero-text">
+      <p class="eyebrow">Ферма «Грядки у моря» · с 2013 года</p>
+      <h1 class="hero-title" id="heroTitle">
+        <span class="word"><span>Огурцы,</span></span><br>
+        <span class="word"><span>собранные</span></span><br>
+        <span class="word"><span class="accent">на&nbsp;рассвете.</span></span>
+      </h1>
+      <p class="hero-lead">Срезаем огурцы в 5 утра, ещё с росой, и к полудню они уже у вас на столе. Никаких складов, пластика и недели ожидания — только живой вкус и хруст, который слышно через всю кухню.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" data-scroll="#order">Заказать сбор</button>
+        <a href="#why" class="btn btn-ghost">Почему мы</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><b><span data-count="14300">0</span></b><span>кг собрано с прошлой грядки</span></div>
+        <div class="hstat"><b><span data-count="27" data-suffix=" мин">0</span></b><span>от поля до вашей двери</span></div>
+        <div class="hstat"><b>4,9</b><span>из 5 · средняя оценка фермы</span></div>
+      </div>
+    </div>
+    <div class="hero-media">
+      <figure class="frame f-a kb reveal"><img src="https://picsum.photos/seed/fresh-cucumber-vine-dawn/900/1100" alt="Грядки огурцов на рассвете"></figure>
+      <span class="cap">утренний сбор, 5:24</span>
+      <figure class="frame f-b kb reveal"><img src="https://picsum.photos/seed/green-cucumber-closeup-dew/600/700" alt="Огурец крупным планом"></figure>
+      <figure class="frame f-c kb reveal"><img src="https://picsum.photos/seed/cucumber-harvest-basket/500/420" alt="Корзина с огурцами"></figure>
+      <div class="spin-badge">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><defs><path id="circ" d="M50,50 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0"/></defs><text><textPath href="#circ">сбор 24 июня · хруст слышно · ферма грядки у моря · </textPath></text></svg>
+        <div class="spin-center">🥒</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="marquee" aria-hidden="true">
+  <div class="mq-track">
+    <span>Собрано в 5 утра <em>·</em> Хруст слышно через всю кухню <em>·</em> Без пестицидов <em>·</em> Срезано вручную <em>·</em> Доставим за день <em>·</em> </span>
+    <span>Собрано в 5 утра <em>·</em> Хруст слышно через всю кухню <em>·</em> Без пестицидов <em>·</em> Срезано вручную <em>·</em> Доставим за день <em>·</em> </span>
+  </div>
+</div>
+
+<!-- ============ WHY / STICKY SPLIT ============ -->
+<section class="sec-pad wrap" id="why">
+  <div class="split">
+    <div class="sticky-col reveal">
+      <p class="eyebrow">Почему именно наши огурцы</p>
+      <h2 style="font-size:clamp(2rem,5vw,3.4rem);margin:.3em 0 .8em">Собраны в тот же день, когда вы их едите.</h2>
+      <div class="countdown-card">
+        <p class="cd-label">До ближайшего сбора</p>
+        <div class="cd-row" id="cdRow">
+          <div class="cd-cell"><div class="cd-num" id="cdD">00</div><div class="cd-lab">дней</div></div>
+          <div class="cd-cell"><div class="cd-num" id="cdH">00</div><div class="cd-lab">часов</div></div>
+          <div class="cd-cell"><div class="cd-num" id="cdM">00</div><div class="cd-lab">минут</div></div>
+          <div class="cd-cell"><div class="cd-num" id="cdS">00</div><div class="cd-lab">секунд</div></div>
+        </div>
+        <p class="cd-note"><span aria-hidden="true">⏱️</span> Закажите до 12:00 — привезём в день сбора.</p>
+      </div>
+    </div>
+    <div class="reasons">
+      <article class="reason reveal"><span class="rnum">01 / РОСА</span><h3>Собраны на рассвете 🌅</h3><p>Мы срезаем огурцы в 5 утра, пока они ещё холодные и в росе. Именно в этот момент у них максимальный сахар и самый плотный хруст.</p></article>
+      <article class="reason reveal"><span class="rnum">02 / ЖИВОЙ</span><h3>Пьют живую воду 💧</h3><p>Грядки поливаем скважинной водой с берега, а не из-под крана. Вкус чувствуется в первом же укусе — огурец сладковатый и сочный.</p></article>
+      <article class="reason reveal"><span class="rnum">03 / ЧИСТЫЙ</span><h3>Без химии, как у бабушки 🌱</h3><p>Никаких пестицидов и «обработок». Только мульча из соломы, сидераты и немного терпения. Кожуру можно не срезать.</p></article>
+      <article class="reason reveal"><span class="rnum">04 / РАЗНЫЙ</span><h3>Сортовые, не «стеклянные» 🎯</h3><p>Четыре разных сорта на выбор — от мелких пучковых до длинных корнишонов. Каждый со своим характером и размером.</p></article>
+      <article class="reason reveal"><span class="rnum">05 / БЫСТРЫЙ</span><h3>Доставка за день 🚚</h3><p>Привозим в коробке, а не в плёнке. В ней огурцы дышат и живут дольше — к вечеру они такие же свежие, как утром.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS BAND ============ -->
+<section class="stats-band">
+  <div class="wrap stats-grid">
+    <div class="stat reveal"><b><span data-count="14300" data-suffix="+">0</span></b><span>кг огурцов собрано с прошлой грядки</span></div>
+    <div class="stat reveal"><b><span data-count="27" data-suffix=" мин">0</span></b><span>от поля до вашей двери в среднем</span></div>
+    <div class="stat reveal"><b><span data-count="12">0</span></b><span>лет выращиваем огурцы на одной ферме</span></div>
+    <div class="stat reveal"><b><span data-count="98" data-suffix="%">0</span></b><span>заказчиков заказывают у нас повторно</span></div>
+  </div>
+</section>
+
+<!-- ============ SORTS / CARD STACK ============ -->
+<section class="sec-pad wrap sorts" id="sorts">
+  <div class="head reveal">
+    <p class="eyebrow">Сортовой ряд · сезонный сбор</p>
+    <h2>Выберите свой огурец.</h2>
+    <p>Все сорта из одного сбора — отличаются размером, плотностью и назначением. Добавьте в корзину то, что любите, или соберите микс.</p>
+  </div>
+  <div class="card-stack">
+    <article class="scard reveal">
+      <div class="scard-img"><img src="https://picsum.photos/seed/puchkovy-cucumber-small/460/420" alt="Пучковые огурцы"></div>
+      <div class="scard-body">
+        <h3>Пучковые <span class="tag">хрустящие</span></h3>
+        <p class="scard-meta"><span>8–10 см</span><span>сбор: каждые 2 дня</span><span>плотность: средняя</span></p>
+        <p class="scard-desc">Классика для салатов и «просто так». Мелкие, ровные, с тонкой корочкой. Идеальны к столу прямо из корзинки.</p>
+      </div>
+      <div class="scard-side"><span class="price" style="font-size:1.5rem">290 ₽/кг</span><span class="rated">★★★★★ 4,9</span><button class="add-btn" data-add="Пучковые">В корзину +</button></div>
+    </article>
+
+    <article class="scard reveal">
+      <div class="scard-img"><img src="https://picsum.photos/seed/cosmic-treat-cucumber/460/420" alt="Космический уголок"></div>
+      <div class="scard-body">
+        <h3>«Космический уголок» <span class="tag">хит сезона</span></h3>
+        <p class="scard-meta"><span>12–15 см</span><span>сбор: ежедневно</span><span>плотность: высокая</span></p>
+        <p class="scard-desc">Наш флагман. Плотные, сладковатые, с лёгкой горчинкой у хвостика — как настоящие «фермерские». Самые частый выбор повторных заказов.</p>
+      </div>
+      <div class="scard-side"><span class="price" style="font-size:1.5rem">320 ₽/кг</span><span class="rated">★★★★★ 5,0</span><button class="add-btn" data-add="«Космический уголок»">В корзину +</button></div>
+    </article>
+
+    <article class="scard reveal">
+      <div class="scard-img"><img src="https://picsum.photos/seed/korishony-pickle-cucumber/460/420" alt="Корнишоны"></div>
+      <div class="scard-body">
+        <h3>Корнишоны <span class="tag">для засолки</span></h3>
+        <p class="scard-meta"><span>5–7 см</span><span>сбор: по запросу</span><span>плотность: очень высокая</span></p>
+        <p class="scard-desc">Мелкие и твёрдые — то, что нужно для засолки и маринования. Не разваливаются в банке, держат форму весь год.</p>
+      </div>
+      <div class="scard-side"><span class="price" style="font-size:1.5rem">340 ₽/кг</span><span class="rated">★★★★★ 4,8</span><button class="add-btn" data-add="Корнишоны">В корзину +</button></div>
+    </article>
+
+    <article class="scard reveal">
+      <div class="scard-img"><img src="https://picsum.photos/seed/bazarny-long-cucumber/460/420" alt="Базарные огурцы"></div>
+      <div class="scard-body">
+        <h3>«Базарный» <span class="tag">длинный</span></h3>
+        <p class="scard-meta"><span>18–24 см</span><span>сбор: 2 раза в неделю</span><span>плотность: средняя</span></p>
+        <p class="scard-desc">Длинный и сочный — для больших салатов, закаток на зиму и тех, кто любит «настоящий большой огурец». Много мяса, мало семян.</p>
+      </div>
+      <div class="scard-side"><span class="price" style="font-size:1.5rem">270 ₽/кг</span><span class="rated">★★★★★ 4,9</span><button class="add-btn" data-add="«Базарный»">В корзину +</button></div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ CRAFT / ZIGZAG ============ -->
+<section class="sec-pad wrap craft" id="craft">
+  <div class="head reveal">
+    <p class="eyebrow">Как мы выращиваем</p>
+    <h2>От семечки до вашего стола — пять шагов.</h2>
+  </div>
+  <div class="craft-list">
+    <div class="step reveal"><div><span class="step-num">ШАГ 01 / ПОСАДКА</span><h3>Семечко в тёплую землю</h3><p>В апреле семя садим под плёнку, чтобы земля прогрелась. Почва — наша, с перегноем трёхлетней выдержки и без навоза «из-под крана».</p></div><div class="step-media"><img src="https://picsum.photos/seed/cucumber-seedling-soil/800/620" alt="Рассада огурцов"></div></div>
+    <div class="step reveal"><div><span class="step-num">ШАГ 02 / ПОЛИВ</span><h3>Живая вода с берега</h3><p>Капельный полив скважинной водой. Ничего лишнего — огурец сам знает, сколько ему нужно. Поэтому он и сладкий.</p></div><div class="step-media"><img src="https://picsum.photos/seed/greenhouse-watering-cucumber/800/620" alt="Полив в теплице"></div></div>
+    <div class="step reveal"><div><span class="step-num">ШАГ 03 / УХОД</span><h3>Мульча и сидераты вместо химии</h3><p>Корни укрываем соломой, грядки чередуем с горчицей и фацелией. Вредителей ловят жуки-навозники и наши руки — не пестициды.</p></div><div class="step-media"><img src="https://picsum.photos/seed/mulch-cucumber-garden-care/800/620" alt="Мульчирование грядок"></div></div>
+    <div class="step reveal"><div><span class="step-num">ШАГ 04 / СОБРАТЬ</span><h3>Ручной сбор на рассвете</h3><p>Каждый огурец срезаем секатором, не выкручиваем. Так он дольше хранится и держит хруст. Корзины — деревянные, а не пластиковые.</p></div><div class="step-media"><img src="https://picsum.photos/seed/hand-harvest-cucumber-basket/800/620" alt="Ручной сбор огурцов"></div></div>
+    <div class="step reveal"><div><span class="step-num">ШАГ 05 / ДОСТАВКА</span><h3>За день до вашей двери</h3><p>Утром собрали — вечером у вас. Привозим в бумажной коробке, в которой огурцы дышат и живут дольше.</p></div><div class="step-media"><img src="https://picsum.photos/seed/cucumber-delivery-box-door/800/620" alt="Доставка огурцов"></div></div>
+  </div>
+</section>
+
+<!-- ============ GALLERY / POSTCARDS ============ -->
+<section class="sec-pad wrap">
+  <div class="head reveal" style="margin-inline:auto;text-align:center;max-width:52ch">
+    <p class="eyebrow">Из жизни грядок</p>
+    <h2>Открытки с фермы.</h2>
+  </div>
+  <div class="gallery-grid">
+    <figure class="postcard reveal" style="--rot:-4deg"><div class="pc-img"><img src="https://picsum.photos/seed/cucumber-garden-morning-light/600/560" alt="Грядка утром"></div><figcaption>грядка №3 · 5:41</figcaption></figure>
+    <figure class="postcard reveal" style="--rot:3deg"><div class="pc-img"><img src="https://picsum.photos/seed/cucumber-basket-full/600/560" alt="Корзина огурцов"></div><figcaption>сбор дня · 14 кг</figcaption></figure>
+    <figure class="postcard reveal" style="--rot:-2deg"><div class="pc-img"><img src="https://picsum.photos/seed/cucumber-hand-holding-fresh/600/560" alt="Огурец в руках"></div><figcaption>«Космический уголок»</figcaption></figure>
+    <figure class="postcard reveal" style="--rot:4deg"><div class="pc-img"><img src="https://picsum.photos/seed/cucumber-slice-fresh-cut/600/560" alt="Плоские огурцы"></div><figcaption>первый укус</figcaption></figure>
+    <figure class="postcard reveal" style="--rot:-3deg"><div class="pc-img"><img src="https://picsum.photos/seed/greenhouse-tomato-cucumber-rows/600/560" alt="Ряды в теплице"></div><figcaption>теплица «Южная»</figcaption></figure>
+    <figure class="postcard reveal" style="--rot:2deg"><div class="pc-img"><img src="https://picsum.photos/seed/cucumber-dew-drop-macro/600/560" alt="Капля росы на огурце"></div><figcaption>роса ещё не сошла</figcaption></figure>
+  </div>
+</section>
+
+<!-- ============ REVIEWS / STICKY NOTES ============ -->
+<section class="sec-pad wrap reviews" id="reviews">
+  <div class="head reveal" style="margin-inline:auto;text-align:center;max-width:52ch">
+    <p class="eyebrow">Что говорят соседи по грядке</p>
+    <h2>Отзывы, от которых огурцы становятся вкуснее.</h2>
+  </div>
+  <div class="reviews-grid">
+    <blockquote class="note reveal" style="--rot:-3deg"><div class="stars">★★★★★</div><p>«Забрала заказ в 16:00, а огурцы как будто только с грядки. Хруст такой, что муж просил ещё.»</p><div class="who">— Марина, третий год с нами</div></blockquote>
+    <blockquote class="note reveal" style="--rot:2deg"><div class="stars">★★★★★</div><p>«Взяла корнишоны на зиму. Через три месяца банки всё ещё хрустят — это ли не достижение?»</p><div class="who">— Оксана, дачница из Калуги</div></blockquote>
+    <blockquote class="note reveal" style="--rot:-2deg"><div class="stars">★★★★★</div><p>«Ребёнок сам съел огурец целиком. Я в шоке. Обычно — только на пюре.»</p><div class="who">— Денис, папа двух детей</div></blockquote>
+    <blockquote class="note reveal" style="--rot:3deg"><div class="stars">★★★★★</div><p>«„Космический уголок" — просто лучший. Сладковатый, плотный. Больше нигде таких не нашла.»</p><div class="who">— Алёна, шеф-повар ресторана «Сад»</div></blockquote>
+    <blockquote class="note reveal" style="--rot:-3deg"><div class="stars">★★★★★</div><p>«Заказываю микс на компанию. Коробка едет к нам 25 минут — огурцы приезжают холодные.»</p><div class="who">— Сергей, постоянный клиент</div></blockquote>
+    <blockquote class="note reveal" style="--rot:2deg"><div class="stars">★★★★★</div><p>«Кожуру не срезала впервые за жизнь. Вкусно так — будто бабушка на даче дала.»</p><div class="who">— Наталья, просто любит огурцы</div></blockquote>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="sec-pad wrap" style="max-width:900px;margin-inline:auto">
+  <div class="head reveal"><p class="eyebrow">Частые вопросы</p><h2>Спросили — ответили.</h2></div>
+  <div class="faq-item reveal"><button class="faq-q">Как быстро вы доставляете?<span class="ic">+</span></button><div class="faq-a"><p>В день сбора. Закажите до 12:00 — привезём сегодня вечером в пределах города, либо оставим у пункта выдачи.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q">Сколько хранятся огурцы?<span class="ic">+</span></button><div class="faq-a"><p>В бумажной коробке при комнатной температуре — до 5 дней, в холодильнике ещё дольше. Мы не используем плёнку, поэтому они «дышат» и живут.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q">Можно ли заказать доставку за город?<span class="ic">+</span></button><div class="faq-a"><p>Да. Загородная доставка — от 400 ₽, стоимость зависит от удалённости. Укажите адрес в комментарии к заказу.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q">Что делать, если огурец не понравился?<span class="ic">+</span></button><div class="faq-a"><p>Напишите нам — заменим или вернём деньги без лишних вопросов. Мы уверены в своём товаре и хотим, чтобы вы остались довольны.</p></div></div>
+  <div class="faq-item reveal"><button class="faq-q">Как оплатить?<span class="ic">+</span></button><div class="faq-a"><p>Картой онлайн или наличными курьеру. Для регулярных заказов можно оформить постоплату после второго заказа.</p></div></div>
+</section>
+
+<!-- ============ ORDER / CALCULATOR ============ -->
+<section class="order-band" id="order">
+  <div class="wrap order-grid">
+    <div class="order-copy reveal">
+      <p class="eyebrow" style="color:var(--lime)">Сезонный сбор · 24 июня</p>
+      <h2>Закажите огурцы к утру.</h2>
+      <p>Соберите свой набор, выберите доставку — и всё. Оплата после подтверждения, замена или возврат без вопросов.</p>
+      <ul class="order-features">
+        <li>Доставим в день сбора</li>
+        <li>Бумажная коробка, а не плёнка</li>
+        <li>Оплата картой или наличными</li>
+        <li>−25% на первый заказ по коду СЫРНАЯ</li>
+      </ul>
+    </div>
+    <div class="calculator reveal">
+      <p class="calc-title">Соберите свой набор</p>
+
+      <div class="opt" data-opt="0">
+        <div class="opt-info"><b>Пучковые</b><small>290 ₽/кг · хрустящие, для салата</small></div>
+        <div class="stepper"><button class="st-btn" data-step="-1">−</button><span class="st-count" id="c0">2</span><button class="st-btn" data-step="1">+</button></div>
+      </div>
+      <div class="opt" data-opt="1">
+        <div class="opt-info"><b>«Космический уголок»</b><small>320 ₽/кг · хит сезона</small></div>
+        <div class="stepper"><button class="st-btn" data-step="-1">−</button><span class="st-count" id="c1">2</span><button class="st-btn" data-step="1">+</button></div>
+      </div>
+      <div class="opt" data-opt="2">
+        <div class="opt-info"><b>Корнишоны</b><small>340 ₽/кг · для засолки</small></div>
+        <div class="stepper"><button class="st-btn" data-step="-1">−</button><span class="st-count" id="c2">1</span><button class="st-btn" data-step="1">+</button></div>
+      </div>
+      <div class="opt" style="border-bottom:none">
+        <div class="opt-info"><b>«Базарный»</b><small>270 ₽/кг · длинный, для закаток</small></div>
+        <div class="stepper"><button class="st-btn" data-step="-1">−</button><span class="st-count" id="c3">1</span><button class="st-btn" data-step="1">+</button></div>
+      </div>
+
+      <p style="font-family:'Space Mono',monospace;font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;color:var(--green-mid);margin-top:1.6rem">Доставка</p>
+      <div class="delivery-row">
+        <button class="del-opt sel" data-del="0"><b>Город</b><small>бесплатно</small></button>
+        <button class="del-opt" data-del="400"><b>Загород</b><small>+400 ₽</small></button>
+      </div>
+
+      <div class="calc-total">
+        <span class="lbl">Итого к оплате</span>
+        <span class="val" id="totalVal">1 520 ₽</span>
+      </div>
+      <button class="calc-btn" id="orderBtn">Оформить заказ</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#top" class="logo">Вкусно<b>·</b>Космические</a>
+        <p>Ферма «Грядки у моря». Выращиваем огурцы на одной земле с 2013 года — без химии, на живую воду.</p>
+        <form class="news-form" id="newsForm">
+          <input type="email" placeholder="e-mail для рассылки сборов" required aria-label="Email">
+          <button type="submit" class="btn btn-primary" style="padding:.7em 1.2em;font-size:.85rem">Подписаться</button>
+        </form>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col"><h4>Ферма</h4><a href="#why">Почему мы</a><a href="#sorts">Сортовые</a><a href="#craft">Выращивание</a></div>
+        <div class="foot-col"><h4>Покупателям</h4><a href="#order">Заказать сбор</a><a href="#">Доставка и оплата</a><a href="#">Отзывы</a></div>
+        <div class="foot-col"><h4>Связь</h4><p>+7 (900) 123-45-67</p><p>gryadki@mor.ru</p><p>сбор: ср, сб · до 12:00</p></div>
+      </div>
+    </div>
+    <p class="copy">© 2024 Ферма «Грядки у моря» · Сделано с любовью к огурцам 🥒</p>
+  </div>
+</footer>
+
+<!-- ============ TOAST / FLOAT CTA / MODAL ============ -->
+<div class="toast" id="toast"></div>
+<a href="#order" class="float-cta" id="floatCta">Заказать сбор →</a>
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <button class="modal-close" data-close aria-label="Закрыть">×</button>
+    <p class="eyebrow" style="color:var(--green-mid)">Ваш заказ</p>
+    <h3>Почти готово!</h3>
+    <ul class="modal-sums" id="modalSums"></ul>
+    <div class="modal-total"><span>Итого</span><span id="modalTotal">0 ₽</span></div>
+    <form id="orderForm">
+      <input type="text" placeholder="Ваше имя" required style="width:100%;padding:.9em 1em;border-radius:12px;border:2px solid rgba(23,36,13,.2);font-family:inherit;margin-bottom:.8rem">
+      <input type="tel" placeholder="Телефон" required style="width:100%;padding:.9em 1em;border-radius:12px;border:2px solid rgba(23,36,13,.2);font-family:inherit;margin-bottom:1.4rem">
+      <button type="submit" class="btn btn-primary" style="width:100%">Подтвердить заказ</button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+  /* ---- scroll progress + header + float cta ---- */
+  var header=document.getElementById('header'), prog=document.getElementById('progress'), fcta=document.getElementById('floatCta');
+  function onScroll(){
+    var h=document.documentElement, max=h.scrollHeight-h.clientHeight;
+    prog.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+    header.classList.toggle('scrolled', h.scrollTop>20);
+    fcta.classList.toggle('show', h.scrollTop>window.innerHeight*0.95 && !modalOpen);
+  }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  /* ---- reveal + line-mask trigger ---- */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(function(el,i){ el.style.transitionDelay=(i%5*70)+'ms'; io.observe(el); });
+
+  var heroTitle=document.getElementById('heroTitle');
+  requestAnimationFrame(function(){ setTimeout(function(){ heroTitle.classList.add('in'); },120); });
+
+  /* ---- counters ---- */
+  function fmt(n){ return n.toLocaleString('ru-RU'); }
+  var cio=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(!e.isIntersecting) return; var el=e.target, t=+el.dataset.count, suf=el.dataset.suffix||''; cio.unobserve(el);
+      if(reduce){ el.textContent=fmt(t)+suf; return; }
+      var st=null,dur=1500;
+      function step(ts){ if(!st)st=ts; var p=Math.min((ts-st)/dur,1), e2=1-Math.pow(1-p,3); el.textContent=fmt(Math.floor(e2*t))+suf; if(p<1)requestAnimationFrame(step); else el.textContent=fmt(t)+suf; }
+      requestAnimationFrame(step);
+    });
+  },{threshold:.4});
+  document.querySelectorAll('[data-count]').forEach(function(el){ cio.observe(el); });
+
+  /* ---- countdown to next harvest (24 June, today if passed) ---- */
+  function pad(n){ return String(n).padStart(2,'0'); }
+  var target=(function(){ var y=new Date().getFullYear(), d=new Date(y,5,24,6,0,0); if(d<new Date()) d=new Date(y+1,5,24,6,0,0); return d; })();
+  function tickCd(){ var diff=Math.max(0,target-Date.now());
+    document.getElementById('cdD').textContent=pad(Math.floor(diff/864e5));
+    document.getElementById('cdH').textContent=pad(Math.floor(diff/36e5)%24);
+    document.getElementById('cdM').textContent=pad(Math.floor(diff/6e4)%60);
+    document.getElementById('cdS').textContent=pad(Math.floor(diff/1e3)%60); }
+  tickCd(); setInterval(tickCd,1000);
+
+  /* ---- calculator ---- */
+  var prices=[290,320,340,270], names=['Пучковые','«Космический уголок»','Корнишоны','«Базарный»'];
+  var qty=[2,2,1,1], delivery=0;
+  function recalc(){ var t=qty.reduce(function(s,q,i){return s+q*prices[i];},0)+delivery; document.getElementById('totalVal').textContent=fmt(t)+' ₽'; }
+  document.querySelectorAll('.st-btn').forEach(function(b){ b.addEventListener('click',function(){
+    var i=+b.closest('.opt').dataset.opt, d=+b.dataset.step; qty[i]=Math.max(0,qty[i]+d); document.getElementById('c'+i).textContent=qty[i]; recalc(); });});
+  document.querySelectorAll('.del-opt').forEach(function(b){ b.addEventListener('click',function(){
+    delivery=+b.dataset.del; document.querySelectorAll('.del-opt').forEach(function(x){x.classList.remove('sel');}); b.classList.add('sel'); recalc(); });});
+  recalc();
+
+  /* ---- add to cart from cards ---- */
+  var toastEl=document.getElementById('toast'), toastT;
+  function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(function(){toastEl.classList.remove('show');},2600); }
+  document.querySelectorAll('[data-add]').forEach(function(b){ b.addEventListener('click',function(){ toast(b.dataset.add+' — добавлен в набор 🥒'); });});
+
+  /* ---- modal ---- */
+  var modal=document.getElementById('modal'), modalOpen=false;
+  function openModal(){ var lines=''; qty.forEach(function(q,i){ if(q>0) lines+='<li>'+names[i]+' · '+q+' кг × '+prices[i]+' ₽ = <b style="float:right">'+fmt(q*prices[i])+' ₽</b></li>'; });
+    document.getElementById('modalSums').innerHTML=lines||'<li>Набор пуст — добавьте огурцы выше.</li>';
+    var t=qty.reduce(function(s,q,i){return s+q*prices[i];},0)+delivery;
+    document.getElementById('modalTotal').textContent=fmt(t)+' ₽';
+    modal.classList.add('open'); modalOpen=true; fcta.classList.remove('show'); }
+  function closeModal(){ modal.classList.remove('open'); modalOpen=false; onScroll(); }
+  document.getElementById('orderBtn').addEventListener('click',openModal);
+  document.querySelectorAll('[data-close]').forEach(function(b){ b.addEventListener('click',closeModal); });
+  modal.addEventListener('click',function(e){ if(e.target===modal) closeModal(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&modalOpen) closeModal(); });
+
+  /* ---- forms ---- */
+  function submitMsg(form,msg){ form.addEventListener('submit',function(e){ e.preventDefault(); form.reset(); toast(msg); }); }
+  submitMsg(document.getElementById('orderForm'),'Заказ оформлен! Позвоним в течение часа 📞');
+  submitMsg(document.getElementById('newsForm'),'Готово — напишем к следующему сбору ✉️');
+
+  /* ---- smooth scroll for nav/ctas ---- */
+  document.querySelectorAll('[data-scroll]').forEach(function(a){ a.addEventListener('click',function(e){ e.preventDefault(); var t=document.querySelector(a.dataset.scroll); if(t) t.scrollIntoView({behavior:reduce?'auto':'smooth'}); });});
+})();
+</script>
+</body>
+</html>
