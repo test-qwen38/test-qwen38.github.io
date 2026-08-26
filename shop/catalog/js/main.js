@@ -185,6 +185,7 @@ grid.addEventListener("click", e => {
     }
   } else if (buyBtn) {
     e.preventDefault();
+    if (!requireAuthRedirect("catalog/index.html", "?category=" + encodeURIComponent(categoryName))) return;
     const itemName = decodeURIComponent(buyBtn.dataset.name);
     const item = (catalogData[categoryName] || []).find(i => i.name === itemName);
     if (!item) return;

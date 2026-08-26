@@ -34,7 +34,7 @@ order-detail.html     → common/storage.js + common/utils.js      + js/order-de
 | `common/js/utils.js` (40 стр.) | Общие утилиты: экранирование, форматирование цен/дат, плюрализация | `escapeHtml`, `escapeAttr`, `formatPrice`, `formatDate`, `pluralize` |
 | `common/js/nav.js` | Общий рендер навигационной панели: строит `nav.site-nav` (лого + пункты из `NAV_ITEMS` + слот `#authNav`) и вызывает `renderAuthNav()`; статичный HTML шапки в страницах удалён | `renderSiteNav(current)` — `"categories" \| "orders"` или `""`; `NAV_ITEMS` |
 | `categories/js/script.js` (167 стр.) | Страница категорий: рендер, поиск, inline-переименование, удаление по второму клику | — (UI только) |
-| `catalog/js/main.js` (197 стр.) | Каталог категории: сетка, фильтр по типу/поиск, форма позиции, «Заказать» → корзина + редирект на checkout через 350 мс | — |
+| `catalog/js/main.js` (198 стр.) | Каталог категории: сетка, фильтр по типу/поиск, форма позиции, «Заказать» → гость перенаправляется на `login/` (`requireAuthRedirect`), авторизованный — корзина + редирект на checkout через 350 мс | — |
 | `checkout/js/main.js` (167 стр.) | Корзина-сводка со степперами, валидация формы покупателя, создание заказа, экран успеха | — |
 | `orders/js/orders.js` (101 стр.) | Список заказов: поиск по тексту, фильтр по статусу, сводка «N заказов · сумма X»; сам содержит локальную копию `escapeHtml`/`formatPrice` и собственную карту статусов | — |
 | `orders/js/order-detail.js` (139 стр.) | Детали заказа: состав позиций, покупатель, таймлайн, смена статуса new → processing → done (только вперёд; локальные копии утилит и собственной карты статусов) | — |
@@ -43,7 +43,7 @@ order-detail.html     → common/storage.js + common/utils.js      + js/order-de
 ## 3. Пользовательские сценарии и навигация
 
 ```
-categories/index.html ───► catalog/index.html?category=... ──(Заказать, 350 мс)──► checkout/index.html
+categories/index.html ───► catalog/index.html?category=... ──(Заказать: гость → login/; пользователь → корзина, 350 мс)──► checkout/index.html
         ▲                                                                      │ (подтверждение)
         │                                                                      ▼
 orders/order-detail.html?id=... ◄── orders/index.html ◄──────────── success-экран («Мои заказы»)

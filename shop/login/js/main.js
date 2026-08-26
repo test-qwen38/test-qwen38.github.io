@@ -24,5 +24,11 @@ form.addEventListener("submit", e => {
     passwordInput.value = "";
     return;
   }
+
+  const next = new URLSearchParams(window.location.search).get("next");
+  if (next && next.startsWith("../")) {
+    window.location.replace(next);
+    return;
+  }
   window.location.replace("../categories/index.html");
 });

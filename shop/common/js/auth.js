@@ -48,24 +48,21 @@ function logout() {
   return null;
 }
 
-/* next — путь страницы относительно корня сайта, например "checkout/index.html" */
+/* next — путь страницы, относительный к login-каталогу, например "../checkout/index.html" */
 function guestLoginUrl(next) {
   return "../login/index.html" + (next ? "?next=" + encodeURIComponent(next) : "");
 }
 
-/* nextPath относительно корневого каталога сайта: {path:"orders/index.html", query:"?id=..."} */
+/* nextPath относительно корня сайта ("checkout/index.html"); queryString — уже закодирована
+   вызывающим (например "?category=" + encodeURIComponent(name)). next формируется строкой
+   ("../" + путь) — без нормализации URL и повторного кодирования, чтобы не сдвигать "%xx".
+   Сброс текущего скрипта — через throw, НЕ window.stop(): replace() откладывает навигацию,
+   а window.stop() её отменяет; throw прерывает текущий handler ровно по месту вызова. */
 function requireAuthRedirect(nextPath, queryString) {
   if (currentUser()) return true;
-  let next = "";
-  try {
-    const u = new URL(window.location.href);
-    u.pathname = "../" + nextPath;
-    u.search = queryString || "";
-    next = encodeURI(u.pathname + u.search).replace(/%2F/g, "/");
-  } catch (e) {}
+  const next = "../" + nextPath + (queryString || "");
   window.location.replace(guestLoginUrl(next));
-  window.stop();
-  return false;
+  throw new Error("auth_redirect");
 }
 
 /* Слот #authNav в шапке: гость → «Войти», пользователь → имя/роль + выход */
