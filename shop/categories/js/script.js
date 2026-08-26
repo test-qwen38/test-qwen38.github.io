@@ -10,9 +10,8 @@ let editingName = null;
 renderSiteNav("categories");
 
 function refreshUiForRole() {
-  if (editingName) return;
-  const admin = isAdmin();
-  if (!admin && addFormSection) addFormSection.classList.add("hidden");
+  if (!addFormSection) return;
+  addFormSection.classList.toggle("hidden", !isAdmin());
 }
 
 if (!requireAuthRedirect("categories/index.html")) {
