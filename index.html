@@ -16,6 +16,26 @@
     border: none;
   }
   .spoiler-arrow:hover { color: #000; }
+  .spoiler-title {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+  }
+  .spoiler-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .spoiler-title a:hover { text-decoration: underline; }
+  .spoiler-title .arrow {
+    color: #6c757d;
+    margin-left: 4px;
+  }
+  .spoiler-title .arrow:hover { color: #000; }
+  .spoiler-body { margin-top: 6px; font-size: 12px; line-height: 1.4; }
+  .spoiler-body a { color: #0d6efd; }
+  .spoiler-status { color: #6c757d; }
 </style>
 </head>
 <body>
@@ -27,92 +47,21 @@
     </a>
   </header>
 
+  <p class="text-muted small mb-4">Все проекты на этой странице сгенерированы с помощью <a href="https://opencode.ai" target="_blank" rel="noopener">opencode</a> и модели <a href="https://ollama.com/library/qwen3.8" target="_blank" rel="noopener">qwen3.8 27b</a>.</p>
+
   <main>
-    <div class="list-group">
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="aquarium/index.html">Рыбки в аквариуме</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
+    <div class="list-group" id="projects">
+      <template id="project-template">
+        <div class="list-group-item">
+          <h6 class="mb-0">
+            <button type="button" class="spoiler-title">
+              <a target="_blank"></a>
+              <span class="arrow">&#9654;</span>
+            </button>
+          </h6>
+          <div class="spoiler-body" hidden></div>
         </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="car-animation/index.html">Анимация машины</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="crypto-tools/index.html">Крипто-инструменты</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="cucumber-landing/index.html">Лэндинг для продажи огурцов</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="curl-fixer/index.html">Фиксер CURL-запросов</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="film-catalog/index.html">Каталог фильмов</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="hamster-dance/index.html">Танцующий хомяк</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="shop/categories/index.html">Электронный магазин</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small>
-            Логины: admin, user<br/>
-            Пароль: Wwwqqq111
-          </small>
-        </div>
-      </div>
-      <div class="list-group-item" aria-current="true">
-        <h6 class="mb-0 d-flex align-items-center">
-          <a href="todo/index.html">Список задач</a>
-          <button type="button" class="spoiler-arrow ms-1" aria-expanded="false">&#9654;</button>
-        </h6>
-        <div class="spoiler-body" hidden>
-          <small></small>
-        </div>
-      </div>
+      </template>
     </div>
   </main>
   <footer class="pt-5 my-5 text-muted border-top">
@@ -120,23 +69,53 @@
   </footer>
 </div>
 <script>
-  document.querySelectorAll('.list-group-item').forEach(function (item) {
-    var body = item.querySelector('.spoiler-body');
-    var small = body ? body.querySelector('small') : null;
-    if (!small || !small.textContent.trim()) {
-      var btn = item.querySelector('.spoiler-arrow');
-      if (btn) btn.remove();
-    }
-  });
-  document.querySelectorAll('.spoiler-arrow').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var item = btn.closest('.list-group-item');
-      var body = item.querySelector('.spoiler-body');
-      var open = body.hidden;
-      body.hidden = !open;
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.innerHTML = open ? '&#9660;' : '&#9654;';
+  var PROJECTS = [
+    { name: 'Рыбки в аквариуме', href: 'aquarium/index.html', readme: 'aquarium/README.html' },
+    { name: 'Анимация машины', href: 'car-animation/index.html', readme: 'car-animation/README.html' },
+    { name: 'Крипто-инструменты', href: 'crypto-tools/index.html', readme: 'crypto-tools/README.html' },
+    { name: 'Лэндинг для продажи огурцов', href: 'cucumber-landing/index.html', readme: 'cucumber-landing/README.html' },
+    { name: 'Фиксер CURL-запросов', href: 'curl-fixer/index.html', readme: 'curl-fixer/README.html' },
+    { name: 'Каталог фильмов', href: 'film-catalog/index.html', readme: 'film-catalog/README.html' },
+    { name: 'Танцующий хомяк', href: 'hamster-dance/index.html', readme: 'hamster-dance/README.html' },
+    { name: 'Электронный магазин', href: 'shop/categories/index.html', readme: 'shop/README.html' },
+    { name: 'Список задач', href: 'todo/index.html', readme: 'todo/README.html' }
+  ];
+
+  var projectsEl = document.getElementById('projects');
+  var template = document.getElementById('project-template');
+
+  PROJECTS.forEach(function (project) {
+    var node = template.content.firstElementChild.cloneNode(true);
+    var title = node.querySelector('.spoiler-title');
+    var link = title.querySelector('a');
+    var arrow = title.querySelector('.arrow');
+    var body = node.querySelector('.spoiler-body');
+
+    link.textContent = project.name;
+    link.setAttribute('href', project.href);
+    link.setAttribute('target', '_blank');
+
+    arrow.addEventListener('click', function () {
+      if (body.hidden) {
+        fetch(project.readme).then(function (resp) {
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          return resp.text();
+        }).then(function (html) {
+          body.innerHTML = html;
+          body.hidden = false;
+          arrow.innerHTML = '&#9660;';
+        }).catch(function () {
+          body.innerHTML = '<span class="spoiler-status">Не удалось загрузить описание (README.html)</span>';
+          body.hidden = false;
+          arrow.innerHTML = '&#9660;';
+        });
+      } else {
+        body.hidden = true;
+        arrow.innerHTML = '&#9654;';
+      }
     });
+
+    projectsEl.appendChild(node);
   });
 </script>
 </body>
