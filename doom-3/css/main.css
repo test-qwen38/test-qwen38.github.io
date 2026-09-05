@@ -1,0 +1,184 @@
+/* DOOM 3 — стили */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: "Courier New", monospace;
+  user-select: none;
+}
+
+#game {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+  background: #000;
+  cursor: crosshair;
+}
+
+/* ---------- HUD ---------- */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  color: #e8e0c8;
+}
+
+.hud-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 14px 30px 20px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+}
+
+.hud-stat { text-align: center; }
+.hud-stat.right { text-align: right; }
+.hud-stat.center { text-align: center; }
+
+.hud-label {
+  font-size: 13px;
+  letter-spacing: 3px;
+  color: #9a8f6f;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+}
+
+.hud-value {
+  font-size: 44px;
+  font-weight: bold;
+  line-height: 1;
+  text-shadow: 0 0 10px rgba(255, 200, 80, 0.35);
+  color: #f2e8c9;
+}
+
+#health.low { color: #e04a3a; text-shadow: 0 0 12px rgba(224, 74, 58, 0.7); }
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+}
+#crosshair::before,
+#crosshair::after {
+  content: "";
+  position: absolute;
+  background: rgba(220, 220, 220, 0.75);
+}
+#crosshair::before {
+  left: 50%;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  transform: translateX(-50%);
+}
+#crosshair::after {
+  top: 50%;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+#dmg-vignette {
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 120px 40px rgba(180, 20, 10, 0);
+  transition: box-shadow 0.2s;
+}
+#dmg-vignette.active {
+  box-shadow: inset 0 0 160px 60px rgba(200, 30, 15, 0.75);
+}
+
+#flashlight-icon {
+  position: absolute;
+  bottom: 110px;
+  left: 30px;
+  font-size: 22px;
+  filter: grayscale(0.4);
+}
+
+/* ---------- Экраны ---------- */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: radial-gradient(ellipse at center, #14100c 0%, #050403 75%);
+  color: #cfc4a4;
+  text-align: center;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.screen h1 {
+  font-size: 74px;
+  letter-spacing: 12px;
+  color: #d8382a;
+  text-shadow: 0 0 24px rgba(216, 56, 42, 0.5), 0 4px 0 #4a0e08;
+}
+
+.screen h2 {
+  font-size: 46px;
+  letter-spacing: 8px;
+  color: #d8c99a;
+  text-shadow: 0 0 18px rgba(216, 201, 154, 0.3);
+}
+
+.screen .sub { color: #8a7f63; letter-spacing: 2px; }
+
+.screen .controls {
+  list-style: none;
+  color: #a3987a;
+  font-size: 14px;
+  line-height: 1.9;
+  letter-spacing: 1px;
+}
+
+.screen .hint { font-size: 12px; color: #6d6450; }
+
+.btn {
+  font-family: inherit;
+  font-size: 20px;
+  letter-spacing: 4px;
+  padding: 12px 44px;
+  background: #241c12;
+  color: #e8dcb8;
+  border: 2px solid #7a6a45;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn:hover {
+  background: #3a2e1c;
+  border-color: #c9b57e;
+  box-shadow: 0 0 18px rgba(216, 190, 120, 0.35);
+}
+
+/* ---------- Сообщения ---------- */
+#msg {
+  position: fixed;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #e8dfc0;
+  font-size: 20px;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px #000, 0 2px 0 #000;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.hidden { display: none !important; }

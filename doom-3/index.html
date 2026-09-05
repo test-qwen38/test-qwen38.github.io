@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOOM 3 — браузерная FPS</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-bottom">
+      <div class="hud-stat">
+        <div class="hud-label">ЗДОРОВЬЕ</div>
+        <div class="hud-value" id="health">100</div>
+      </div>
+      <div class="hud-stat center">
+        <div class="hud-label" id="weaponName">ПИСТОЛЕТ</div>
+        <div class="hud-value" id="ammo">8</div>
+      </div>
+      <div class="hud-stat right">
+        <div class="hud-label">ЗАПАС</div>
+        <div class="hud-value" id="ammoReserve">16</div>
+      </div>
+    </div>
+    <div id="crosshair"></div>
+    <div id="dmg-vignette"></div>
+    <div id="flashlight-icon">💡</div>
+  </div>
+
+  <!-- Экраны -->
+  <div id="menu" class="screen">
+    <h1>DOOM&nbsp;3</h1>
+    <p class="sub">Браузерная версия в стиле оригинала</p>
+    <ul class="controls">
+      <li><b>WASD</b> — движение, <b>Мышь</b> — обзор</li>
+      <li><b>ЛКМ</b> — огонь, <b>R</b> — перезарядка</li>
+      <li><b>1 / 2</b> — смена оружия, <b>F</b> — фонарик</li>
+      <li><b>Shift</b> — бег, <b>SPACE</b> — прыжок, <b>E</b> — открыть/взять</li>
+    </ul>
+    <button id="btn-start" class="btn">НАЧАТЬ ИГРУ</button>
+    <p class="hint">Кликните, чтобы захватить мышью. ESC — пауза.</p>
+  </div>
+
+  <div id="pause" class="screen hidden">
+    <h2>ПАУЗА</h2>
+    <p>Нажмите, чтобы продолжить</p>
+  </div>
+
+  <div id="over" class="screen hidden">
+    <h2 id="over-title">ВЫ ПОГИБЛИ</h2>
+    <p id="over-sub"></p>
+    <button id="btn-restart" class="btn">ЗАНОВО</button>
+  </div>
+
+  <div id="msg"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
