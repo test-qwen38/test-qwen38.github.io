@@ -32,12 +32,19 @@
   <div class="card">
     <h1>RSA — Генерация ключей, подпись, верификация</h1>
 
-    <h2>1. Генерация пары ключей (RSASSA-PKCS1-v1_5, SHA-256)</h2>
+    <h2>1. Генерация пары ключей (RSASSA-PKCS1-v1_5)</h2>
     <span style="font-size:14px">Длина: </span>
     <select id="bits" onchange="document.getElementById('btnGen').disabled = true">
       <option value="2048" selected>2048 бит</option>
       <option value="3072">3072 бита</option>
       <option value="4096">4096 бит</option>
+    </select>
+    <span style="font-size:14px">Хэш: </span>
+    <select id="genHash" onchange="document.getElementById('btnGen').disabled = true">
+      <option value="SHA-1">SHA-1</option>
+      <option value="SHA-256" selected>SHA-256</option>
+      <option value="SHA-384">SHA-384</option>
+      <option value="SHA-512">SHA-512</option>
     </select>
     <div>
       <button onclick="genKeys()" id="btnGen">Сгенерировать ключи</button>
@@ -54,7 +61,14 @@
     <div class="result" id="pubJwk">— публичный ключ (JWK) —</div>
     <div class="result" id="privJwk">— приватный ключ (JWK) —</div>
 
-    <h2>2. Подпись сообщения (RSA + SHA-256)</h2>
+    <h2>2. Подпись сообщения (RSA + хэш)</h2>
+    <span style="font-size:14px">Хэш: </span>
+    <select id="signHash">
+      <option value="SHA-1">SHA-1</option>
+      <option value="SHA-256" selected>SHA-256</option>
+      <option value="SHA-384">SHA-384</option>
+      <option value="SHA-512">SHA-512</option>
+    </select>
     <textarea id="input" placeholder="Введите текст для подписи..."></textarea>
     <div class="row">
       <button onclick="signMsg()" id="btnSign" disabled>Подписать</button>
@@ -71,7 +85,7 @@
     <div class="status" id="status"></div>
 
     <div class="info">
-      Алгоритм: RSASSA-PKCS1-v1_5 (SHA-256) через Web Crypto API (crypto.subtle).<br>
+      Алгоритм: RSASSA-PKCS1-v1_5 (SHA-1/256/384/512, выбор при генерации) через Web Crypto API (crypto.subtle).<br>
       Ключи хранятся только в памяти страницы (экспортируются в виде JWK при копировании).
     </div>
   </div>
@@ -87,15 +101,17 @@
 
   async function genKeys() {
     const bits = parseInt(document.getElementById('bits').value, 10);
+    const hash = document.getElementById('genHash').value;
     const btn = document.getElementById('btnGen');
     btn.disabled = true;
     btn.textContent = 'Генерация...';
     try {
       keyPair = await crypto.subtle.generateKey(
-        { name: 'RSASSA-PKCS1-v1_5', modulusLength: bits, publicExponent: new Uint8Array([1, 0, 0, 1]), hash: 'SHA-256' },
+        { name: 'RSASSA-PKCS1-v1_5', modulusLength: bits, publicExponent: new Uint8Array([1, 0, 0, 1]), hash: hash },
         true,
         ['sign', 'verify']
       );
+      document.getElementById('signHash').value = hash;
       document.getElementById('btnSign').disabled = false;
       document.getElementById('btnVerify').disabled = false;
       await showKeys();
@@ -121,7 +137,7 @@
     const text = document.getElementById('input').value;
     if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
     const sig = await crypto.subtle.sign(
-      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      { name: 'RSASSA-PKCS1-v1_5', hash: document.getElementById('signHash').value },
       keyPair.privateKey,
       new TextEncoder().encode(text)
     );
@@ -139,7 +155,7 @@
     if (!text && !sigB64) { alert('Введите текст и подпись'); return; }
     try {
       const ok = await crypto.subtle.verify(
-        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        { name: 'RSASSA-PKCS1-v1_5', hash: document.getElementById('signHash').value },
         keyPair.publicKey,
         b64urlDecode(sigB64),
         new TextEncoder().encode(text)
