@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кодер/декодер Base64 и Hex</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    padding: 32px;
+  }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  h1 code {
+    background: #ecfdf5; color: #047857;
+    padding: 2px 8px; border-radius: 6px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 16px;
+  }
+  .subtitle { color: #6b7280; margin-bottom: 24px; line-height: 1.5; font-size: 14px; }
+  .subtitle code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 12px;
+  }
+  .panel { margin-bottom: 16px; }
+  label.field { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+  textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    background: #f9fafb;
+    color: #111827;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+    tab-size: 4;
+  }
+  textarea:focus {
+    outline: none; border-color: #0d9488; background: #fff;
+    box-shadow: 0 0 0 3px rgba(13,148,136,0.15);
+  }
+  textarea.bad { border-color: #dc2626; background: #fef2f2; }
+
+  .modes { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .modes label {
+    display: flex; align-items: center; gap: 6px; margin: 0;
+    font-weight: 600; font-size: 14px; cursor: pointer;
+    padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+    background: #f9fafb;
+  }
+  .modes input[type="radio"] { width: 15px; height: 15px; cursor: pointer; accent-color: #0d9488; }
+
+  .options { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .options label {
+    display: flex; align-items: center; gap: 6px; margin: 0;
+    font-weight: 500; font-size: 13px; cursor: pointer;
+    padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+    background: #f9fafb;
+  }
+  .options input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #0d9488; }
+  .options select {
+    border: 1px solid #d1d5db; border-radius: 6px; padding: 2px 6px;
+    font-size: 13px; background: #fff;
+  }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  button {
+    padding: 10px 18px;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: transform .05s, background .15s;
+  }
+  button:active { transform: translateY(1px); }
+  #encodeBtn  { background: #0d9488; color: #fff; }
+  #encodeBtn:hover  { background: #0f766e; }
+  #decodeBtn  { background: #2563eb; color: #fff; }
+  #decodeBtn:hover  { background: #1d4ed8; }
+  #copyBtn    { background: #059669; color: #fff; }
+  #copyBtn:hover    { background: #047857; }
+  #clearBtn   { background: #f3f4f6; color: #6b7280; }
+  #clearBtn:hover   { background: #e5e7eb; }
+
+  #stats { margin-top: 8px; font-size: 13px; color: #6b7280; min-height: 18px; }
+  #stats.ok { color: #059669; font-weight: 600; }
+  #stats.err { color: #dc2626; font-weight: 600; }
+
+  .hint { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+    font-size: 12px; color: #9ca3af; line-height: 1.6; }
+  .hint b { color: #6b7280; }
+  .hint code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Кодер/декодер <code>Base64</code> и <code>Hex</code></h1>
+    <p class="subtitle">
+      Двусторонняя конвертация текста (UTF-8) и байтов: <b>Base64</b>, <b>Base64 URL-safe</b> и <b>Hex</b>.
+      Все преобразования выполняются локально в браузере, ничего никуда не отправляется.
+    </p>
+
+    <div class="modes">
+      <label><input type="radio" name="mode" value="b64" checked> Base64</label>
+      <label><input type="radio" name="mode" value="b64url"> Base64 URL-safe</label>
+      <label><input type="radio" name="mode" value="hex"> Hex</label>
+    </div>
+
+    <div class="panel">
+      <label class="field" for="input">Вход</label>
+      <textarea id="input" spellcheck="false" placeholder="Вставьте текст или уже закодированную строку..."></textarea>
+    </div>
+
+    <div class="options" id="b64Options">
+      <label><input type="checkbox" id="wrapCheck" checked> Перенос каждые 76 символов</label>
+      <label><input type="checkbox" id="paddingCheck" checked> Padding (<code>=</code>)</label>
+      <label>
+        При декодировании в текст: <select id="outCharset">
+          <option value="utf8" selected>UTF-8</option>
+          <option value="latin1">Latin-1 (Windows-1252)</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="options" id="hexOptions" hidden>
+      <label><input type="checkbox" id="hexLower" checked> Страница (lowercase)</label>
+      <label><input type="checkbox" id="hexSpace"> Разделитель после каждого байта (пробел)</label>
+      <label>
+        При декодировании в текст: <select id="hexCharset">
+          <option value="utf8" selected>UTF-8</option>
+          <option value="latin1">Latin-1 (Windows-1252)</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button id="encodeBtn">Кодировать (текст → байты)</button>
+      <button id="decodeBtn">Декодировать (байты → текст)</button>
+      <button id="copyBtn">Копировать</button>
+      <button id="clearBtn">Сбросить</button>
+    </div>
+
+    <div class="panel">
+      <label class="field" for="output">Результат</label>
+      <textarea id="output" readonly spellcheck="false" placeholder="Здесь появится результат..."></textarea>
+      <div id="stats"></div>
+    </div>
+
+    <div class="hint">
+      <b>Кодировать</b>: текст (UTF-8) → байты → выбранное представление (base64 / base64url / hex).
+      <b>Декодировать</b>: строка из поля «Вход» → байты → текст.
+      <br>URL-safe вариант заменяет <code>+/</code> на <code>-_</code> (padding опционален).
+      Hex-вход допускает пробелы, <code>0x</code> и регистр без разницы.
+      Если байты декодировались и потом нужно их «переконвертировать» в другой формат —
+      скопируйте результат и вставьте обратно в поле «Вход».
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+  var input = document.getElementById('input');
+  var output = document.getElementById('output');
+  var stats = document.getElementById('stats');
+  var b64Options = document.getElementById('b64Options');
+  var hexOptions = document.getElementById('hexOptions');
+  var wrapCheck = document.getElementById('wrapCheck');
+  var paddingCheck = document.getElementById('paddingCheck');
+  var outCharset = document.getElementById('outCharset');
+  var hexLower = document.getElementById('hexLower');
+  var hexSpace = document.getElementById('hexSpace');
+  var hexCharset = document.getElementById('hexCharset');
+
+  function mode() {
+    var checked = document.querySelector('input[name="mode"]:checked');
+    return checked ? checked.value : 'b64';
+  }
+
+  document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+    r.addEventListener('change', syncOptions);
+  });
+  function syncOptions() {
+    var hex = mode() === 'hex';
+    b64Options.hidden = hex;
+    hexOptions.hidden = !hex;
+  }
+  syncOptions();
+
+  function setStats(message, ok) {
+    stats.textContent = message;
+    stats.className = ok === true ? 'ok' : (message ? 'err' : '');
+  }
+
+  function textToBytes(text) {
+    return new Uint8Array(new TextEncoder().encode(text));
+  }
+
+  function bytesToText(bytes, charset) {
+    if (charset === 'latin1') {
+      var out = '';
+      for (var i = 0; i < bytes.length; i++) out += String.fromCharCode(bytes[i]);
+      return out;
+    }
+    return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+  }
+
+  function bytesToBase64(bytes, urlSafe, withPadding) {
+    var bin = '';
+    var CH = 0x8000;
+    for (var i = 0; i < bytes.length; i += CH) {
+      bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+    }
+    var b64 = btoa(bin);
+    if (urlSafe) b64 = b64.replace(/\+/g, '-').replace(/\//g, '_');
+    if (!withPadding) b64 = b64.replace(/=+$/, '');
+    return b64;
+  }
+
+  function base64ToBytes(str, urlSafe) {
+    var s = str.replace(/\s+/g, '');
+    if (urlSafe) s = s.replace(/-/g, '+').replace(/_/g, '/');
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(s)) {
+      throw new Error('строка не похожа на Base64 (недопустимые символы)');
+    }
+    if (s.length % 4 !== 0) {
+      throw new Error('Base64: длина строки (после удаления пробелов) должна кратно 4, сейчас ' + s.length);
+    }
+    var bin = atob(s);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function wrap(text, width) {
+    if (!width || !text) return text;
+    return text.match(new RegExp('.{1,' + width + '}([^$]|(?=$))', 'g')).join('\n');
+  }
+
+  function bytesToHex(bytes, lower, spaced) {
+    var out = '';
+    for (var i = 0; i < bytes.length; i++) {
+      var h = bytes[i].toString(16).padStart(2, '0');
+      out += lower ? h : h.toUpperCase();
+      if (spaced && i < bytes.length - 1) out += ' ';
+    }
+    return out;
+  }
+
+  function hexToBytes(str) {
+    var s = str.replace(/\s+/g, '').replace(/^0[xX]/, '');
+    if (!/^[0-9a-fA-F]*$/.test(s)) {
+      throw new Error('в hex-строке есть недопустимые символы (допустимо 0-9, a-f)');
+    }
+    if (s.length % 2 !== 0) {
+      throw new Error('hex-строка должна иметь чётную длину, сейчас ' + s.length);
+    }
+    var bytes = new Uint8Array(s.length / 2);
+    for (var i = 0; i < bytes.length; i++) {
+      bytes[i] = parseInt(s.substr(i * 2, 2), 16);
+    }
+    return bytes;
+  }
+
+  function encode() {
+    try {
+      var m = mode();
+      var text = input.value;
+      var bytes = textToBytes(text);
+      var result;
+      if (m === 'hex') {
+        result = bytesToHex(bytes, hexLower.checked, hexSpace.checked);
+      } else {
+        var b64 = bytesToBase64(bytes, m === 'b64url', paddingCheck.checked);
+        result = wrapCheck.checked ? wrap(b64, 76) : b64;
+      }
+      output.value = result;
+      output.classList.remove('bad');
+      setStats('Закодировано: ' + bytes.length + ' байт (' + text.length + ' символов UTF-8)', true);
+    } catch (e) {
+      setStats('Ошибка: ' + e.message, false);
+    }
+  }
+
+  function decode() {
+    try {
+      var m = mode();
+      var bytes;
+      if (m === 'hex') {
+        bytes = hexToBytes(input.value);
+      } else {
+        bytes = base64ToBytes(input.value, m === 'b64url');
+      }
+      var text = bytesToText(bytes, m === 'hex' ? hexCharset.value : outCharset.value);
+      output.value = text;
+      output.classList.remove('bad');
+      setStats('Раскодировано: ' + bytes.length + ' байт → ' + text.length + ' символов', true);
+    } catch (e) {
+      output.classList.add('bad');
+      setStats('Ошибка: ' + e.message, false);
+    }
+  }
+
+  document.getElementById('encodeBtn').addEventListener('click', encode);
+  document.getElementById('decodeBtn').addEventListener('click', decode);
+
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var value = output.value;
+    if (!value) { setStats('Нечего копировать', false); return; }
+    navigator.clipboard.writeText(value).then(function () {
+      setStats('Скопировано в буфер обмена', true);
+    }).catch(function () {
+      output.select();
+      document.execCommand('copy');
+      setStats('Скопировано в буфер обмена', true);
+    });
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    input.value = '';
+    output.value = '';
+    output.classList.remove('bad');
+    setStats('');
+  });
+
+  input.addEventListener('input', function () { setStats(''); });
+})();
+</script>
+</body>
+</html>

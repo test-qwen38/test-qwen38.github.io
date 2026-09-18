@@ -130,8 +130,8 @@
     buf[len] = 0x80;
     const dv = new DataView(buf.buffer);
     const bitLen = len * 8;
-    dv.setUint32(withLen, bitLen & 0xffffffff, true);
-    dv.setUint32(withLen + 4, Math.floor(bitLen / 4294967296) & 0xffffffff, true);
+    dv.setUint32(withLen - 8, bitLen & 0xffffffff, true);
+    dv.setUint32(withLen - 4, Math.floor(bitLen / 4294967296) & 0xffffffff, true);
     let a = 0x67452301, b = 0xefcdab89, c = 0x98badcfe, d = 0x10325476;
     const M = new Uint32Array(16);
     for (let off = 0; off < buf.length; off += 64) {
