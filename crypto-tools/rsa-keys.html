@@ -61,6 +61,26 @@
     <div class="result" id="pubJwk">— публичный ключ (JWK) —</div>
     <div class="result" id="privJwk">— приватный ключ (JWK) —</div>
 
+    <h2>1.1 Вставка готовых ключей</h2>
+    <details>
+      <summary>Публичный ключ (PEM / SPKI или JWK)</summary>
+      <textarea id="importPub" style="min-height:120px" placeholder="Вставьте PEM (-----BEGIN PUBLIC KEY-----) или JSON (JWK)..."></textarea>
+      <div class="row">
+        <button onclick="loadKeys('pub'); this.blur()">Загрузить публичный</button>
+        <button class="ghost" onclick="copyTa('importPub'); copyBtn(this)">Копировать</button>
+      </div>
+      <div class="status" id="statusPub"></div>
+    </details>
+    <details style="margin-top:10px">
+      <summary>Приватный ключ (PEM / PKCS#8 или JWK)</summary>
+      <textarea id="importPriv" style="min-height:120px" placeholder="Вставьте PEM (-----BEGIN PRIVATE KEY-----) или JSON (JWK)..."></textarea>
+      <div class="row">
+        <button onclick="loadKeys('priv'); this.blur()">Загрузить приватный</button>
+        <button class="ghost" onclick="copyTa('importPriv'); copyBtn(this)">Копировать</button>
+      </div>
+      <div class="status" id="statusPriv"></div>
+    </details>
+
     <h2>2. Подпись сообщения (RSA + хэш)</h2>
     <span style="font-size:14px">Хэш: </span>
     <select id="signHash">
@@ -86,6 +106,7 @@
 
     <div class="info">
       Алгоритм: RSASSA-PKCS1-v1_5 (SHA-1/256/384/512, выбор при генерации) через Web Crypto API (crypto.subtle).<br>
+      Публичный и приватный ключи можно вставлять отдельно (PEM: SPKI/PKCS#8/PKCS#1 или JWK) — для подписи нужен приватный, для проверки — публичный.
       Ключи хранятся только в памяти страницы (экспортируются в виде JWK при копировании).
     </div>
   </div>
@@ -122,20 +143,53 @@
   }
 
   async function showKeys() {
-    const pubPem = derToPem(await crypto.subtle.exportKey('spki', keyPair.publicKey), 'PUBLIC KEY');
-    const privPem = derToPem(await crypto.subtle.exportKey('pkcs8', keyPair.privateKey), 'PRIVATE KEY');
-    document.getElementById('pubPem').textContent = pubPem;
-    document.getElementById('privPem').textContent = privPem;
+    if (keyPair.publicKey) {
+      document.getElementById('pubPem').textContent = derToPem(await crypto.subtle.exportKey('spki', keyPair.publicKey), 'PUBLIC KEY');
+      const pub = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+      document.getElementById('pubJwk').textContent = JSON.stringify(pub, null, 2);
+    }
+    if (keyPair.privateKey) {
+      document.getElementById('privPem').textContent = derToPem(await crypto.subtle.exportKey('pkcs8', keyPair.privateKey), 'PRIVATE KEY');
+      const priv = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+      document.getElementById('privJwk').textContent = JSON.stringify(priv, null, 2);
+    }
+  }
 
-    const pub = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
-    const priv = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
-    document.getElementById('pubJwk').textContent = JSON.stringify(pub, null, 2);
-    document.getElementById('privJwk').textContent = JSON.stringify(priv, null, 2);
+  function importStatus(kind, ok, msg) {
+    const el = document.getElementById(kind === 'pub' ? 'statusPub' : 'statusPriv');
+    el.className = 'status ' + (ok ? 'ok' : 'bad');
+    el.textContent = msg;
+  }
+
+  async function loadKeys(kind) {
+    const ta = kind === 'pub' ? 'importPub' : 'importPriv';
+    const data = document.getElementById(ta).value.trim();
+    if (!data) { importStatus(kind, false, 'Вставьте ключ'); return; }
+    const alg = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
+    const usage = kind === 'pub' ? ['verify'] : ['sign'];
+    let key;
+    try {
+      if (data.startsWith('---')) {
+        const fmt = kind === 'pub' ? 'spki' : (data.includes('RSA PRIVATE KEY') ? 'pkcs1' : 'pkcs8');
+        key = await crypto.subtle.importKey(fmt, pemToDer(data), alg, false, usage);
+      } else {
+        key = await crypto.subtle.importKey('jwk', JSON.parse(data), alg, false, usage);
+      }
+    } catch (e) {
+      importStatus(kind, false, 'Ошибка импорта: ' + e.message);
+      return;
+    }
+    keyPair = keyPair || { publicKey: null, privateKey: null };
+    keyPair[kind === 'pub' ? 'publicKey' : 'privateKey'] = key;
+    if (keyPair.publicKey) document.getElementById('btnVerify').disabled = false;
+    if (keyPair.privateKey) document.getElementById('btnSign').disabled = false;
+    await showKeys();
+    importStatus(kind, true, kind === 'pub' ? 'Публичный ключ загружен' : 'Приватный ключ загружен');
   }
 
   async function signMsg() {
     const text = document.getElementById('input').value;
-    if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
+    if (!keyPair || !keyPair.privateKey) { alert('Сначала сгенерируйте или вставьте приватный ключ'); return; }
     const sig = await crypto.subtle.sign(
       { name: 'RSASSA-PKCS1-v1_5', hash: document.getElementById('signHash').value },
       keyPair.privateKey,
@@ -149,7 +203,7 @@
   async function verifyMsg() {
     const status = document.getElementById('status');
     status.className = 'status';
-    if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
+    if (!keyPair || !keyPair.publicKey) { alert('Сначала сгенерируйте или вставьте публичный ключ'); return; }
     const text = document.getElementById('verifyText').value;
     const sigB64 = document.getElementById('verifySig').value.trim();
     if (!text && !sigB64) { alert('Введите текст и подпись'); return; }
@@ -182,13 +236,13 @@
 
   function clearAll() {
     keyPair = null;
-    ['input', 'verifyText', 'verifySig'].forEach(id => document.getElementById(id).value = '');
+    ['input', 'verifyText', 'verifySig', 'importPub', 'importPriv'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pubPem').textContent = '— публичный ключ (PEM / SPKI) —';
     document.getElementById('privPem').textContent = '— приватный ключ (PEM / PKCS#8) —';
     document.getElementById('pubJwk').textContent = '— публичный ключ (JWK) —';
     document.getElementById('privJwk').textContent = '— приватный ключ (JWK) —';
     document.getElementById('sigOut').textContent = '— подпись (base64url) —';
-    document.getElementById('status').className = 'status';
+    ['status', 'statusPub', 'statusPriv'].forEach(id => document.getElementById(id).className = 'status');
     document.getElementById('btnSign').disabled = true;
     document.getElementById('btnVerify').disabled = true;
   }

@@ -11,6 +11,17 @@ function b64urlDecode(s) {
   return Uint8Array.from(bin, c => c.charCodeAt(0)).buffer;
 }
 
+function pemToDer(pem) {
+  const b64 = pem.replace(/-----(BEGIN|END)[^-]*-----/g, '').replace(/\s+/g, '');
+  const bin = atob(b64);
+  return Uint8Array.from(bin, c => c.charCodeAt(0)).buffer;
+}
+
+async function copyTa(id) {
+  const text = document.getElementById(id).value;
+  if (text.trim()) await copyToClipboard(text);
+}
+
 function flashButton(btn, text = 'Скопировано!', ms = 1200) {
   const old = btn.textContent;
   btn.textContent = text;

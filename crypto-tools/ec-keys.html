@@ -26,12 +26,36 @@
     <h2>1. Генерация пары ключей (P-256 / secp256r1, ECDSA)</h2>
     <button onclick="genKeys()" id="btnGen">Сгенерировать ключи</button>
     <div class="row">
-      <button class="ghost" onclick="copyEl('pubJwk'); copyBtn(this)">Копировать публичный</button>
-      <button class="ghost" onclick="copyEl('privJwk'); copyBtn(this)">Копировать приватный</button>
+      <button class="ghost" onclick="copyEl('pubPem'); copyBtn(this)">Публичный (PEM)</button>
+      <button class="ghost" onclick="copyEl('privPem'); copyBtn(this)">Приватный (PEM)</button>
+      <button class="ghost" onclick="copyEl('pubJwk'); copyBtn(this)">Публичный (JWK)</button>
+      <button class="ghost" onclick="copyEl('privJwk'); copyBtn(this)">Приватный (JWK)</button>
       <button class="ghost" onclick="clearAll()">Сбросить всё</button>
     </div>
-    <div class="result" id="pubJwk" style="margin-top:10px">— публичный ключ (JWK) —</div>
+    <div class="result" id="pubPem" style="margin-top:10px">— публичный ключ (PEM / SPKI) —</div>
+    <div class="result" id="privPem">— приватный ключ (PEM / PKCS#8) —</div>
+    <div class="result" id="pubJwk">— публичный ключ (JWK) —</div>
     <div class="result" id="privJwk">— приватный ключ (JWK) —</div>
+
+    <h2>1.1 Вставка готовых ключей</h2>
+    <details>
+      <summary>Публичный ключ (PEM / SPKI или JWK)</summary>
+      <textarea id="importPub" style="min-height:120px" placeholder="Вставьте PEM (-----BEGIN PUBLIC KEY-----) или JSON (JWK)..."></textarea>
+      <div class="row">
+        <button onclick="loadKeys('pub'); this.blur()">Загрузить публичный</button>
+        <button class="ghost" onclick="copyTa('importPub'); copyBtn(this)">Копировать</button>
+      </div>
+      <div class="status" id="statusPub"></div>
+    </details>
+    <details style="margin-top:10px">
+      <summary>Приватный ключ (PEM / PKCS#8 или JWK)</summary>
+      <textarea id="importPriv" style="min-height:120px" placeholder="Вставьте PEM (-----BEGIN PRIVATE KEY-----) или JSON (JWK)..."></textarea>
+      <div class="row">
+        <button onclick="loadKeys('priv'); this.blur()">Загрузить приватный</button>
+        <button class="ghost" onclick="copyTa('importPriv'); copyBtn(this)">Копировать</button>
+      </div>
+      <div class="status" id="statusPriv"></div>
+    </details>
 
     <h2>2. Подпись сообщения (ECDSA / SHA-256)</h2>
     <textarea id="input" placeholder="Введите текст для подписи..."></textarea>
@@ -51,7 +75,8 @@
 
     <div class="info">
       Алгоритм: ECDSA (P-256) + SHA-256 через Web Crypto API (crypto.subtle).<br>
-      Ключи хранятся только в памяти страницы (экспортируются в виде JWK при копировании).
+      Публичный и приватный ключи можно вставлять отдельно (PEM: SPKI/PKCS#8 или JWK) — для подписи нужен приватный, для проверки — публичный.
+      Ключи хранятся только в памяти страницы.
     </div>
   </div>
 <script src="common.js"></script>
@@ -70,15 +95,63 @@
   }
 
   async function showJwk() {
-    const pub = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
-    const priv = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
-    document.getElementById('pubJwk').textContent = JSON.stringify(pub, null, 2);
-    document.getElementById('privJwk').textContent = JSON.stringify(priv, null, 2);
+    if (keyPair.publicKey) {
+      const pub = await crypto.subtle.exportKey('jwk', keyPair.publicKey);
+      document.getElementById('pubJwk').textContent = JSON.stringify(pub, null, 2);
+      function derToPem(der, label) {
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(der)));
+        const wrapped = b64.match(/.{1,64}/g).join('\n');
+        return '-----BEGIN ' + label + '-----\n' + wrapped + '\n-----END ' + label + '-----';
+      }
+      document.getElementById('pubPem').textContent = derToPem(await crypto.subtle.exportKey('spki', keyPair.publicKey), 'PUBLIC KEY');
+    }
+    if (keyPair.privateKey) {
+      const priv = await crypto.subtle.exportKey('jwk', keyPair.privateKey);
+      document.getElementById('privJwk').textContent = JSON.stringify(priv, null, 2);
+      function derToPem(der, label) {
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(der)));
+        const wrapped = b64.match(/.{1,64}/g).join('\n');
+        return '-----BEGIN ' + label + '-----\n' + wrapped + '\n-----END ' + label + '-----';
+      }
+      document.getElementById('privPem').textContent = derToPem(await crypto.subtle.exportKey('pkcs8', keyPair.privateKey), 'PRIVATE KEY');
+    }
+  }
+
+  function importStatus(kind, ok, msg) {
+    const el = document.getElementById(kind === 'pub' ? 'statusPub' : 'statusPriv');
+    el.className = 'status ' + (ok ? 'ok' : 'bad');
+    el.textContent = msg;
+  }
+
+  async function loadKeys(kind) {
+    const ta = kind === 'pub' ? 'importPub' : 'importPriv';
+    const data = document.getElementById(ta).value.trim();
+    if (!data) { importStatus(kind, false, 'Вставьте ключ'); return; }
+    const alg = { name: 'ECDSA', namedCurve: 'P-256' };
+    const usage = kind === 'pub' ? ['verify'] : ['sign'];
+    let key;
+    try {
+      if (data.startsWith('---')) {
+        const fmt = kind === 'pub' ? 'spki' : 'pkcs8';
+        key = await crypto.subtle.importKey(fmt, pemToDer(data), alg, false, usage);
+      } else {
+        key = await crypto.subtle.importKey('jwk', JSON.parse(data), alg, false, usage);
+      }
+    } catch (e) {
+      importStatus(kind, false, 'Ошибка импорта: ' + e.message);
+      return;
+    }
+    keyPair = keyPair || { publicKey: null, privateKey: null };
+    keyPair[kind === 'pub' ? 'publicKey' : 'privateKey'] = key;
+    if (keyPair.publicKey) document.getElementById('btnVerify').disabled = false;
+    if (keyPair.privateKey) document.getElementById('btnSign').disabled = false;
+    await showJwk();
+    importStatus(kind, true, kind === 'pub' ? 'Публичный ключ загружен' : 'Приватный ключ загружен');
   }
 
   async function signMsg() {
     const text = document.getElementById('input').value;
-    if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
+    if (!keyPair || !keyPair.privateKey) { alert('Сначала сгенерируйте или вставьте приватный ключ'); return; }
     const sig = await crypto.subtle.sign(
       { name: 'ECDSA', hash: 'SHA-256' },
       keyPair.privateKey,
@@ -92,7 +165,7 @@
   async function verifyMsg() {
     const status = document.getElementById('status');
     status.className = 'status';
-    if (!keyPair) { alert('Сначала сгенерируйте ключи'); return; }
+    if (!keyPair || !keyPair.publicKey) { alert('Сначала сгенерируйте или вставьте публичный ключ'); return; }
     const text = document.getElementById('verifyText').value;
     const sigB64 = document.getElementById('verifySig').value.trim();
     if (!text && !sigB64) { alert('Введите текст и подпись'); return; }
@@ -125,11 +198,13 @@
 
   function clearAll() {
     keyPair = null;
-    ['input', 'verifyText', 'verifySig'].forEach(id => document.getElementById(id).value = '');
+    ['input', 'verifyText', 'verifySig', 'importPub', 'importPriv'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pubPem').textContent = '— публичный ключ (PEM / SPKI) —';
+    document.getElementById('privPem').textContent = '— приватный ключ (PEM / PKCS#8) —';
     document.getElementById('pubJwk').textContent = '— публичный ключ (JWK) —';
     document.getElementById('privJwk').textContent = '— приватный ключ (JWK) —';
     document.getElementById('sigOut').textContent = '— подпись (base64url) —';
-    document.getElementById('status').className = 'status';
+    ['status', 'statusPub', 'statusPriv'].forEach(id => document.getElementById(id).className = 'status');
     document.getElementById('btnSign').disabled = true;
     document.getElementById('btnVerify').disabled = true;
   }
