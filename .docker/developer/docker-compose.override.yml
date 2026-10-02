@@ -1,0 +1,9 @@
+
+networks:
+  network:
+    # Зафиксированная подсеть (обход сломанного Docker IPAM-аллокатора на хосте:
+    # автоподбор подсети падает ошибкой "could not find an available, non-overlapping IPv4 address pool").
+    ipam:
+      config:
+        - subnet: 172.30.32.0/24
+          gateway: 172.30.32.1

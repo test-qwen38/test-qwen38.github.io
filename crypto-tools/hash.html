@@ -29,6 +29,9 @@
     <h1>Хеш-функции и контрольные суммы</h1>
     <div class="tabs" id="tabs"></div>
     <textarea id="input" placeholder="Введите текст (или hex-последовательность байтов) для хеширования..."></textarea>
+    <div class="tab-group" id="enc-group" style="margin-top:10px">
+      <span class="group-label">Кодировка</span>
+    </div>
     <div class="result" id="output">—</div>
     <div class="row">
       <button onclick="copyHash(event)">Копировать</button>
@@ -191,19 +194,61 @@
       { name: 'SHA3-512', fn: (d) => Promise.resolve(sha3512(d)) },
     ]},
     { group: 'Другие', items: [
-      { name: 'MD5', fn: (d) => Promise.resolve(hex(md5(d))) },
-      { name: 'CRC-32', fn: (d) => Promise.resolve(crc32(d)) },
-      { name: 'DJB2', fn: (d) => Promise.resolve(djb2(d)) },
+      { name: 'MD5', fn: (d) => Promise.resolve(md5(d)) },
+      { name: 'CRC-32', fn: (d) => Promise.resolve(intToBytes(crc32(d))) },
+      { name: 'DJB2', fn: (d) => Promise.resolve(intToBytes(djb2(d))) },
     ]},
   ];
+
+  // ---------- Кодировщики результата ----------
+  function bnAlphabet(u8, base, alphabet) {
+    let zeros = 0;
+    while (zeros < u8.length && u8[zeros] === 0) zeros++;
+    let n = (zeros < u8.length) ? BigInt('0x' + Array.from(u8.slice(zeros)).map(b => b.toString(16).padStart(2, '0')).join('')) : 0n;
+    const bn = BigInt(base);
+    let s = '';
+    while (n > 0n) {
+      s = alphabet[Number(n % bn)] + s;
+      n = n / bn;
+    }
+    return alphabet[0].repeat(zeros) + s;
+  }
+  const ENCODERS = [
+    { name: 'hex', fn: (u8) => Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('') },
+    { name: 'base64', fn: (u8) => btoa(String.fromCharCode(...u8)) },
+    { name: 'base64-url', fn: (u8) => btoa(String.fromCharCode(...u8)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') },
+    { name: 'base58', fn: (u8) => bnAlphabet(u8, 58, '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz') },
+    { name: 'base62', fn: (u8) => bnAlphabet(u8, 62, '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') },
+    { name: 'base32', fn: (u8) => {
+      const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+      let bits = 0, value = 0, s = '';
+      for (const b of u8) {
+        value = (value << 8) | b;
+        bits += 8;
+        while (bits >= 5) {
+          s += ALPHABET[(value >>> (bits - 5)) & 31];
+          bits -= 5;
+        }
+      }
+      if (bits > 0) s += ALPHABET[(value << (5 - bits)) & 31];
+      if (!s.length) return '';
+      return s + '='.repeat((8 - (s.length % 8)) % 8);
+    }},
+  ];
+  let currentEnc = 'hex';
   function webcrypto(alg) {
     return async (data) => {
       const buf = await crypto.subtle.digest(alg, data);
-      return hex(new Uint8Array(buf));
+      return new Uint8Array(buf);
     };
   }
-  function hex(u8) {
-    return Array.from(u8).map(b => b.toString(16).padStart(2, '0')).join('');
+  function intToBytes(n) {
+    const out = new Uint8Array(4);
+    out[0] = (n >>> 24) & 0xff;
+    out[1] = (n >>> 16) & 0xff;
+    out[2] = (n >>> 8) & 0xff;
+    out[3] = n & 0xff;
+    return out;
   }
 
   let current = 'SHA-256';
@@ -227,12 +272,25 @@
       btn.textContent = name;
       btn.addEventListener('click', () => {
         current = name;
-        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+        tabs.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
         render();
       });
       row.appendChild(btn);
     });
     tabs.appendChild(row);
+  });
+
+  const encGroup = document.getElementById('enc-group');
+  ENCODERS.forEach(({ name, fn }) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (name === currentEnc ? ' active' : '');
+    btn.textContent = name;
+    btn.addEventListener('click', () => {
+      currentEnc = name;
+      encGroup.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === btn));
+      render();
+    });
+    encGroup.appendChild(btn);
   });
 
   function decodeInput(s) {
@@ -255,7 +313,8 @@
     const data = decodeInput(input.value);
     bytesEl.textContent = data.length;
     const algo = ALGS.flatMap(g => g.items).find(a => a.name === current);
-    const result = await algo.fn(data);
+    const bytes = await algo.fn(data);
+    const result = ENCODERS.find(e => e.name === currentEnc).fn(bytes);
     output.textContent = result;
   }
 

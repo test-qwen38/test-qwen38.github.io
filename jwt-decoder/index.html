@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Декодер JWT</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #1a2a6c 0%, #2a4d69 50%, #4b6cb7 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    padding: 32px;
+  }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  h1 code {
+    background: #eef2ff; color: #4338ca;
+    padding: 2px 8px; border-radius: 6px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 16px;
+  }
+  .subtitle { color: #6b7280; margin-bottom: 24px; line-height: 1.5; font-size: 14px; }
+  .subtitle code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 12px;
+  }
+  .panel { margin-bottom: 16px; }
+  label.field { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    resize: vertical;
+    background: #f9fafb;
+    color: #111827;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+  }
+  textarea:focus {
+    outline: none; border-color: #4f46e5; background: #fff;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+  }
+  textarea.bad { border-color: #dc2626; background: #fef2f2; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
+  button {
+    padding: 10px 18px;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: transform .05s, background .15s;
+  }
+  button:active { transform: translateY(1px); }
+  #decodeBtn  { background: #4f46e5; color: #fff; }
+  #decodeBtn:hover  { background: #4338ca; }
+  #sampleBtn  { background: #0d9488; color: #fff; }
+  #sampleBtn:hover  { background: #0f766e; }
+  #clearBtn   { background: #f3f4f6; color: #6b7280; }
+  #clearBtn:hover   { background: #e5e7eb; }
+
+  #stats { margin-top: 8px; font-size: 13px; color: #6b7280; min-height: 18px; }
+  #stats.ok { color: #059669; font-weight: 600; }
+  #stats.err { color: #dc2626; font-weight: 600; }
+
+  .result-section { margin-bottom: 16px; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600; font-size: 14px;
+  }
+  .section-header .copy-mini {
+    padding: 4px 10px; font-size: 12px; font-weight: 600;
+    background: #f3f4f6; color: #4b5563;
+  }
+  .section-header .copy-mini:hover { background: #e5e7eb; }
+  pre {
+    width: 100%;
+    min-height: 40px;
+    max-height: 320px;
+    overflow: auto;
+    padding: 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .token-parts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .token-part {
+    flex: 1 1 200px;
+    border: 1px solid #e5e7eb; border-radius: 10px;
+    padding: 10px 12px; background: #fafafa;
+  }
+  .token-part b {
+    display: block; font-size: 12px; color: #6b7280;
+    margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .token-part span {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 12px; word-break: break-all; color: #111827;
+  }
+
+  .claims { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .claim-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+    background: #eef2ff; color: #4338ca;
+  }
+  .claim-badge.ok { background: #ecfdf5; color: #047857; }
+  .claim-badge.warn { background: #fffbeb; color: #b45309; }
+  .claim-badge.err { background: #fef2f2; color: #dc2626; }
+  .claim-badge code {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-weight: 500; font-size: 12px;
+  }
+
+  .algo {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-bottom: 16px; padding: 8px 14px;
+    border-radius: 8px; background: #f3f4f6; font-size: 13px;
+  }
+  .algo b { font-family: "SF Mono", "Fira Code", Consolas, monospace; }
+  .algo .sig-none { color: #047857; font-weight: 600; }
+  .algo .sig-hs { color: #b45309; font-weight: 600; }
+  .algo .sig-as { color: #4338ca; font-weight: 600; }
+
+  .sig-box {
+    border-radius: 10px; padding: 12px 14px;
+    font-size: 13px; margin-bottom: 16px; line-height: 1.7;
+  }
+  .sig-box.ok { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+  .sig-box.err { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+  .sig-box.note { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
+  .sig-box code {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 11px; word-break: break-all;
+  }
+  input.secret {
+    flex: 1; min-width: 240px;
+    padding: 11px 14px;
+    border: 1px solid #d1d5db; border-radius: 10px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px; background: #f9fafb; color: #111827;
+  }
+  input.secret:focus {
+    outline: none; border-color: #4f46e5; background: #fff;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+  }
+  select.mode {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db; border-radius: 10px;
+    font-size: 13px; background: #f9fafb; cursor: pointer; font-weight: 500;
+  }
+
+  .hint { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+    font-size: 12px; color: #9ca3af; line-height: 1.6; }
+  .hint b { color: #6b7280; }
+  .hint code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Декодер <code>JWT</code></h1>
+    <p class="subtitle">
+      Разбирает JSON Web Token на части <code>header</code>, <code>payload</code> и <code>signature</code>.
+      Расшифровывает Base64URL-сегменты, показывает claims с проверкой сроков (<code>exp</code>, <code>nbf</code>, <code>iat</code>).
+      Секрет для <code>HS256/HS384/HS512</code> можно задать в чистом виде или Base64 — подпись проверяется локально, ничего никуда не отправляется.
+    </p>
+
+    <div class="panel">
+      <label class="field" for="input">JWT-токен</label>
+      <textarea id="input" spellcheck="false" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"></textarea>
+      <div id="stats"></div>
+    </div>
+
+    <div class="panel">
+      <label class="field" for="secret">
+        Секретный ключ <span style="font-weight:normal;color:#6b7280">— для проверки подписи HS256/HS384/HS512 (необязательно)</span>
+      </label>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="secret" class="secret" spellcheck="false" placeholder="в чистом виде или Base64 (для примера: jwt-decoder-sample-secret)" autocomplete="off">
+        <select class="mode" id="secretMode">
+          <option value="auto">Авто (сначала чистый текст, потом Base64)</option>
+          <option value="plain">Чистый текст (UTF-8)</option>
+          <option value="base64">Base64</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="decodeBtn">Декодировать</button>
+      <button id="sampleBtn">Пример токена</button>
+      <button id="clearBtn">Сбросить</button>
+      <label style="display:flex;align-items:center;gap:6px;font-weight:500;font-size:13px;cursor:pointer;margin-left:auto;">
+        <input type="checkbox" id="liveCheck" checked style="width:15px;height:15px;cursor:pointer;accent-color:#4f46e5;">
+        Декодировать автоматически при вводе
+      </label>
+    </div>
+
+    <div id="result" hidden>
+      <div id="algoLine" class="algo"></div>
+
+      <div id="sigVerify" class="sig-box note" hidden></div>
+
+      <div id="claimsBox" class="claims"></div>
+
+      <div class="result-section">
+        <div class="section-header">
+          <span>Header (тип, алгоритм подписи)</span>
+          <button class="copy-mini" data-copy="header">Копировать JSON</button>
+        </div>
+        <pre id="headerOut"></pre>
+      </div>
+
+      <div class="result-section">
+        <div class="section-header">
+          <span>Payload (claims)</span>
+          <button class="copy-mini" data-copy="payload">Копировать JSON</button>
+        </div>
+        <pre id="payloadOut"></pre>
+      </div>
+
+      <div class="result-section">
+        <div class="section-header">
+          <span>Структура токена</span>
+        </div>
+        <div class="token-parts">
+          <div class="token-part"><b>Header (base64url)</b><span id="part0"></span></div>
+          <div class="token-part"><b>Payload (base64url)</b><span id="part1"></span></div>
+          <div class="token-part"><b>Signature</b><span id="part2"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">
+      <b>Как устроен JWT</b>: <code>BASE64URL(header).BASE64URL(payload).signature</code>.
+      <b>Header</b> — тип (<code>typ</code>) и алгоритм подписи (<code>alg</code>).
+      <b>Payload</b> — JSON с claims: зарегистрированными (<code>sub</code>, <code>iss</code>, <code>aud</code>, <code>exp</code>, <code>nbf</code>, <code>iat</code>) и произвольными.
+      <b>Подпись</b> проверяется по секрету (HMAC) или публичному ключу (RS/ES): для <code>HS256/HS384/HS512</code> эта страница проверяет её напрямую в браузере (Web Crypto, локально), если указан секрет.
+      Секрет можно вставить <b>в чистом виде</b> (используется как есть, UTF-8) или в виде <b>Base64</b> (декодируется в байты перед HMAC) — режим «Авто» пробует оба варианта и показывает, какой подошёл.
+      Токен с <code>alg</code> <b>none</b> не подписан вовсе.
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var input = document.getElementById('input');
+  var stats = document.getElementById('stats');
+  var result = document.getElementById('result');
+  var headerOut = document.getElementById('headerOut');
+  var payloadOut = document.getElementById('payloadOut');
+  var partEls = [document.getElementById('part0'), document.getElementById('part1'), document.getElementById('part2')];
+  var algoLine = document.getElementById('algoLine');
+  var claimsBox = document.getElementById('claimsBox');
+  var liveCheck = document.getElementById('liveCheck');
+  var secretInput = document.getElementById('secret');
+  var secretMode = document.getElementById('secretMode');
+  var sigVerify = document.getElementById('sigVerify');
+
+  var SAMPLE = [
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+    'eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ItCY0LLQsNC9INCf0LXRgtGA0L7QsiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc5MDY2OTgyOCwibmJmIjoxNzkwNjY5ODI4LCJleHAiOjE3OTg0NDk0Mjh9',
+    'qLCnkSSpxpFu9XdO6uV6Ibo4LH9eJHfuaYtg2os1k2c'
+  ].join('.');
+
+  var SAMPLE_SECRET = 'jwt-decoder-sample-secret';
+
+  function setStats(message, ok) {
+    stats.textContent = message;
+    stats.className = ok === true ? 'ok' : (message ? 'err' : '');
+  }
+
+  function b64urlDecodeToText(segment) {
+    var s = segment.replace(/-/g, '+').replace(/_/g, '/');
+    switch (s.length % 4) {
+      case 0: break;
+      case 2: s += '=='; break;
+      case 3: s += '='; break;
+      default: throw new Error('сегмент не похож на Base64URL');
+    }
+    var bin = atob(s);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+  }
+
+  function fmtDate(ts) {
+    var d = new Date(ts * 1000);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString('ru-RU');
+  }
+
+  function humanDuration(sec) {
+    sec = Math.round(sec);
+    var sign = sec < 0 ? '-' : '';
+    sec = Math.abs(sec);
+    var d = Math.floor(sec / 86400); sec %= 86400;
+    var h = Math.floor(sec / 3600); sec %= 3600;
+    var m = Math.floor(sec / 60); sec %= 60;
+    var parts = [];
+    if (d) parts.push(d + ' дн.');
+    if (h) parts.push(h + ' ч.');
+    if (m) parts.push(m + ' мин.');
+    if (sec || !parts.length) parts.push(sec + ' с.');
+    return sign + parts.join(' ');
+  }
+
+  function badge(text, cls, sub) {
+    return '<span class="claim-badge ' + cls + '">' + text + (sub ? ' <code>' + sub + '</code>' : '') + '</span>';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function textEncoder(s) { return new TextEncoder().encode(s); }
+
+  function b64urlEncode(bytes) {
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function b64urlToBytes(segment) {
+    var s = segment.replace(/-/g, '+').replace(/_/g, '/');
+    switch (s.length % 4) {
+      case 2: s += '=='; break;
+      case 3: s += '='; break;
+      case 1: throw new Error('сегмент подписи не похож на Base64URL');
+    }
+    var bin = atob(s);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function base64ToBytes(input) {
+    var s = input.trim().replace(/\s+/g, '');
+    if (!/^[A-Za-z0-9+/]*={0,2}$/.test(s) || s.length % 4 !== 0) {
+      throw new Error('секрет не похож на Base64 (убери пробелы или включи режим «Чистый текст»)');
+    }
+    var bin = atob(s);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
+  }
+
+  function candidateSecrets() {
+    var raw = secretInput.value;
+    var mode = secretMode.value;
+    var list = [];
+    if (!raw) return list;
+    function add(label, bytes) { if (bytes !== null) list.push({ label: label, bytes: bytes }); }
+    if (mode === 'plain' || mode === 'auto') add('чистый текст (UTF-8)', textEncoder(raw));
+    if (mode === 'base64' || mode === 'auto') {
+      try { add('Base64', base64ToBytes(raw)); } catch (e) { /* не base64 — пропускаем */ }
+    }
+    return list;
+  }
+
+  async function hmac(dataBytes, hashName, secretBytes) {
+    var cryptoKey = await crypto.subtle.importKey('raw', secretBytes, { name: 'HMAC', hash: hashName }, false, ['sign']);
+    var sig = await crypto.subtle.sign('HMAC', cryptoKey, dataBytes);
+    return new Uint8Array(sig);
+  }
+
+  function sigHex(bytes) {
+    return Array.prototype.map.call(bytes, function (b) {
+      return b.toString(16).padStart(2, '0');
+    }).join(' ');
+  }
+
+  function showSigBox(cls, html) {
+    sigVerify.className = 'sig-box ' + cls;
+    sigVerify.innerHTML = html;
+    sigVerify.hidden = false;
+  }
+
+  async function verifySignature(alg, signingInputBytes, sigSegment) {
+    var m = /^HS(256|384|512)$/.exec(alg || '');
+    if (!m) { sigVerify.hidden = true; return; }
+    var hashBits = m[1];
+    var candidates = candidateSecrets();
+    if (!candidates.length) {
+      showSigBox('note', 'Подпись ' + alg + ' можно проверить локально, если указать секрет выше');
+      return;
+    }
+    if (!sigSegment) {
+      showSigBox('err', 'Подпись пуста — для alg=' + alg + ' она обязательна');
+      return;
+    }
+
+    var expectedByCandidate = [];
+    for (var i = 0; i < candidates.length; i++) {
+      var expected;
+      try { expected = await hmac(signingInputBytes, 'SHA-' + hashBits, candidates[i].bytes); }
+      catch (e) { continue; }
+      expectedByCandidate.push({ label: candidates[i].label, expected: expected });
+    }
+    if (!expectedByCandidate.length) {
+      showSigBox('err', 'Не удалось вывести байты секрета в выбранном режиме');
+      return;
+    }
+
+    var sigBytes;
+    try { sigBytes = b64urlToBytes(sigSegment); }
+    catch (e) {
+      showSigBox('err', 'Сегмент подписи не похож на Base64URL');
+      return;
+    }
+
+    var actualHex = sigHex(sigBytes);
+    for (var j = 0; j < expectedByCandidate.length; j++) {
+      if (b64urlEncode(expectedByCandidate[j].expected) === b64urlEncode(sigBytes)) {
+        showSigBox('ok',
+          '✓ Подпись ' + alg + ' валидна (секрет в режиме «' + expectedByCandidate[j].label + '»)<br>' +
+          'Ожидаемая подпись — та же, что в токене.'
+        );
+        return;
+      }
+    }
+    var first = expectedByCandidate[0];
+    showSigBox('err',
+      '✗ Подпись ' + alg + ' не совпадает (проверили: ' + expectedByCandidate.length + ' вариант(а) секрета)<br>' +
+      'Подпись в токене: <code>' + escHtml(actualHex) + '</code><br>' +
+      'Ожидается (режим «' + first.label + '»): <code>' + escHtml(sigHex(first.expected)) + '</code>'
+    );
+  }
+
+  var KNOWN_CLAIMS = { sub: 'Субъект', iss: 'Издатель', aud: 'Аудитория', exp: 'Истекает', nbf: 'Действителен с', iat: 'Выдан' };
+
+  async function decode() {
+    var token = input.value.trim();
+    result.hidden = true;
+    sigVerify.hidden = true;
+    if (!token) { setStats('', false); return; }
+
+    var parts = token.split('.');
+    if (parts.length !== 3) {
+      input.classList.add('bad');
+      setStats('Ошибка: токен должен состоять из 3 сегментов через «.», сейчас ' + parts.length, false);
+      return;
+    }
+    input.classList.remove('bad');
+
+    var headerJson, payloadJson, header, payload;
+    try {
+      for (var i = 0; i < 2; i++) {
+        if (parts[i] === '') throw new Error('сегмент ' + (i + 1) + ' пустой');
+        var text = b64urlDecodeToText(parts[i]);
+        if (i === 0) headerJson = text; else payloadJson = text;
+      }
+      header = JSON.parse(headerJson);
+      payload = JSON.parse(payloadJson);
+    } catch (e) {
+      input.classList.add('bad');
+      setStats('Ошибка: ' + e.message, false);
+      return;
+    }
+
+    var now = Math.floor(Date.now() / 1000);
+
+    var alg = typeof header.alg === 'string' ? header.alg : '(нет alg)';
+    var sigInfo;
+    if (alg === 'none') {
+      sigInfo = '<span class="sig-none">подпись отсутствует (alg=none)</span>';
+    } else if (/^HS/.test(alg)) {
+      sigInfo = '<span class="sig-hs">HMAC (симметричный секрет)</span>';
+    } else if (/^R/.test(alg) || /^ES/.test(alg) || /^EdDSA$/.test(alg) || /^PS/.test(alg)) {
+      sigInfo = '<span class="sig-as">асимметричный ключ (RSA/ECDSA)</span>';
+    } else {
+      sigInfo = '(неизвестный алгоритм)';
+    }
+    var typ = header.typ ? ' · тип: ' + escHtml(header.typ) : '';
+    var sigLen = parts[2] ? parts[2].length + ' символов' : 'нет подписи';
+    algoLine.innerHTML = 'Алгоритм: <b>' + escHtml(alg) + '</b> ' + sigInfo + typ + ' · подпись: ' + sigLen;
+
+    var badges = [];
+    if (typeof payload.exp === 'number') {
+      if (now >= payload.exp) {
+        badges.push(badge('⌛ истёк', 'err', humanDuration(now - payload.exp) + ' назад · ' + fmtDate(payload.exp)));
+      } else {
+        badges.push(badge('✓ активен', 'ok', 'ещё ' + humanDuration(payload.exp - now) + ' · до ' + fmtDate(payload.exp)));
+      }
+    }
+    if (typeof payload.nbf === 'number') {
+      if (now < payload.nbf) {
+        badges.push(badge('⏳ ещё не действителен', 'warn', 'с ' + fmtDate(payload.nbf)));
+      } else {
+        badges.push(badge('nbf пройден', 'ok', fmtDate(payload.nbf)));
+      }
+    }
+    if (typeof payload.iat === 'number') {
+      badges.push(badge('выдан', '', fmtDate(payload.iat)));
+    }
+    if (payload.sub !== undefined) badges.push(badge('sub', '', escHtml(String(payload.sub))));
+    if (payload.iss !== undefined) badges.push(badge('iss', '', escHtml(String(payload.iss))));
+    if (payload.aud !== undefined) badges.push(badge('aud', '', escHtml(String(payload.aud))));
+    claimsBox.innerHTML = badges.length ? badges.join('') : '';
+
+    headerOut.textContent = JSON.stringify(header, null, 2);
+    payloadOut.textContent = JSON.stringify(payload, null, 2);
+    partEls[0].textContent = parts[0];
+    partEls[1].textContent = parts[1];
+    partEls[2].textContent = parts[2] || '(пусто)';
+
+    result._json = { header: headerOut.textContent, payload: payloadOut.textContent, sig: parts[2] };
+    result.hidden = false;
+    setStats('Декодировано: ' + Object.keys(header).length + ' полей в header, ' +
+      Object.keys(payload).length + ' claims в payload', true);
+
+    var signingInput = (parts[0] + '.' + parts[1]).trim();
+    await verifySignature(alg, textEncoder(signingInput), parts[2]);
+  }
+
+  document.getElementById('decodeBtn').addEventListener('click', decode);
+
+  document.getElementById('sampleBtn').addEventListener('click', function () {
+    input.value = SAMPLE;
+    input.classList.remove('bad');
+    if (!secretInput.value) secretInput.value = SAMPLE_SECRET;
+    decode();
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    input.value = '';
+    input.classList.remove('bad');
+    result.hidden = true;
+    sigVerify.hidden = true;
+    setStats('');
+  });
+
+  function reverify() { if (!result.hidden) decode(); }
+  secretInput.addEventListener('input', function () {
+    if (result.hidden) return;
+    clearTimeout(debounce);
+    debounce = setTimeout(reverify, 300);
+  });
+  secretInput.addEventListener('change', reverify);
+  secretMode.addEventListener('change', reverify);
+
+  document.querySelectorAll('.copy-mini').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var key = btn.getAttribute('data-copy');
+      var value = result._json && result._json[key];
+      if (!value) { setStats('Сначала декодируй токен', false); return; }
+      navigator.clipboard.writeText(value).then(function () {
+        setStats('Скопировано в буфер обмена', true);
+      }).catch(function () {
+        setStats('Не удалось скопировать', false);
+      });
+    });
+  });
+
+  var debounce;
+  input.addEventListener('input', function () {
+    setStats('');
+    if (!liveCheck.checked) return;
+    clearTimeout(debounce);
+    debounce = setTimeout(decode, 300);
+  });
+})();
+</script>
+</body>
+</html>
