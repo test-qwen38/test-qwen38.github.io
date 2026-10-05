@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор ULID</title>
+<link rel="stylesheet" href="common.css">
+<style>
+  .ulid { font-size: 18px !important; letter-spacing: 2px; padding: 14px 16px !important; }
+  .decode { margin-top: 14px; }
+  .decode .part {
+    margin-bottom: 8px;
+    background: #0f3460;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  .decode .label { color: #4ecca3; font-weight: 600; display: block; margin-bottom: 3px; font-size: 12px; }
+  .decode .value { font-family: monospace; word-break: break-all; }
+  .count-row { display: flex; align-items: center; gap: 10px; margin: 14px 0 4px; flex-wrap: wrap; }
+  .count-row input[type=number] {
+    width: 80px; padding: 8px; border-radius: 6px;
+    border: 1px solid #0f3460; background: #0f3460; color: #eee;
+    font-size: 15px; font-weight: 600; outline: none; text-align: center;
+  }
+  .count-row input[type=number]:focus { border-color: #4ecca3; }
+  .count-row label { margin: 0; }
+  .list { margin-top: 10px; max-height: 240px; overflow-y: auto; }
+  .list div {
+    font-family: monospace; font-size: 13px; letter-spacing: 1px;
+    padding: 6px 12px; border-radius: 6px; margin-bottom: 4px; background: #0f3460;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Генератор ULID</h1>
+
+    <div class="result ulid" id="output">—</div>
+
+    <div class="decode">
+      <div class="part">
+        <span class="label">Время (48 бит, первые 10 символов)</span>
+        <span class="value" id="dec-time">—</span>
+      </div>
+      <div class="part">
+        <span class="label">Случайность (80 бит, последние 16 символов)</span>
+        <span class="value" id="dec-rand">—</span>
+      </div>
+    </div>
+
+    <div class="count-row">
+      <label>Количество:</label>
+      <input type="number" id="count" min="1" max="1000" value="10">
+      <button class="ghost" onclick="generateMany()">Сгенерировать партию</button>
+      <button class="ghost" onclick="copyMany(event)" id="copy-many-btn">Копировать все</button>
+    </div>
+
+    <div class="list" id="list"></div>
+
+    <div class="row">
+      <button onclick="regenerate()">Сгенерировать</button>
+      <button class="ghost" onclick="copyUlid(event)">Копировать</button>
+    </div>
+
+    <div class="info">
+      ULID — 128-битный идентификатор в Crockford Base32 (26 символов).
+      48 бит — Unix-время в миллисекундах (сортировка по времени),
+      80 бит — криптографически случайные (crypto.getRandomValues()).
+    </div>
+  </div>
+<script src="common.js"></script>
+<script>
+  const CROCKFORD = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+  const output = document.getElementById('output');
+  const decTime = document.getElementById('dec-time');
+  const decRand = document.getElementById('dec-rand');
+  let current = null;
+  let many = [];
+  let lastTs = null;
+
+  function randomBigInt(bits) {
+    let n = 0n;
+    const bytes = new Uint8Array(Math.ceil(bits / 8));
+    crypto.getRandomValues(bytes);
+    for (const b of bytes) n = (n << 8n) | BigInt(b);
+    return n & ((1n << BigInt(bits)) - 1n);
+  }
+
+  function toCrockford(n, len) {
+    let s = '';
+    while (s.length < len) {
+      s = CROCKFORD[Number(n & 31n)] + s;
+      n >>= 5n;
+    }
+    return s;
+  }
+
+  function ulid(ts = Date.now()) {
+    const time = BigInt(ts) & ((1n << 48n) - 1n);
+    const rand = randomBigInt(80);
+    return toCrockford(time << 80n | rand, 26);
+  }
+
+  function nextTs() {
+    const now = Date.now();
+    lastTs = now > lastTs ? now : lastTs + 1;
+    return lastTs;
+  }
+
+  function decodeUlid(u) {
+    u = u.toUpperCase();
+    let n = 0n;
+    for (const c of u) n = (n << 5n) | BigInt(CROCKFORD.indexOf(c));
+    const ts = Number(n >> 80n);
+    const rand = n & ((1n << 80n) - 1n);
+    return { ts, rand };
+  }
+
+  function render(u) {
+    const d = decodeUlid(u);
+    output.textContent = u;
+    decTime.textContent = `${d.ts} — ${new Date(d.ts).toISOString()}`;
+    decRand.textContent = toCrockford(d.rand, 16);
+  }
+
+  function regenerate() {
+    current = ulid();
+    render(current);
+  }
+
+  function generateMany() {
+    const n = Math.min(1000, Math.max(1, parseInt(document.getElementById('count').value, 10) || 1));
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    many = [];
+    for (let i = 0; i < n; i++) {
+      const u = ulid(nextTs());
+      many.push(u);
+      const div = document.createElement('div');
+      div.textContent = u;
+      list.appendChild(div);
+    }
+  }
+
+  async function copyUlid(e) {
+    if (!current) return;
+    await copyToClipboard(current);
+    flashButton(e.currentTarget);
+  }
+
+  async function copyMany(e) {
+    if (!many.length) return;
+    await copyToClipboard(many.join('\n'));
+    flashButton(e.currentTarget);
+  }
+
+  regenerate();
+</script>
+</body>
+</html>
