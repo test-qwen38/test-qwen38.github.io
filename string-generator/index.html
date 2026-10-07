@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор случайных строк (Hex / Base64)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: linear-gradient(135deg, #1f1c1c 0%, #3d2c1e 50%, #6b4423 100%);
+    min-height: 100vh;
+    padding: 24px;
+    color: #1f2937;
+  }
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    padding: 32px;
+  }
+  h1 { font-size: 24px; margin-bottom: 10px; }
+  h1 code {
+    background: #fff7ed; color: #c2410c;
+    padding: 2px 8px; border-radius: 6px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 16px;
+  }
+  .subtitle { color: #6b7280; margin-bottom: 24px; line-height: 1.5; font-size: 14px; }
+  .subtitle code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 12px;
+  }
+  .panel { margin-bottom: 16px; }
+  label.field { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+
+  .modes { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .modes label {
+    display: flex; align-items: center; gap: 6px; margin: 0;
+    font-weight: 600; font-size: 14px; cursor: pointer;
+    padding: 8px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+    background: #f9fafb;
+  }
+  .modes input[type="radio"] { width: 15px; height: 15px; cursor: pointer; accent-color: #ea580c; }
+
+  .options { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .options label {
+    display: flex; align-items: center; gap: 6px; margin: 0;
+    font-weight: 500; font-size: 13px; cursor: pointer;
+    padding: 6px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+    background: #f9fafb;
+  }
+  .options input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #ea580c; }
+  .options .num {
+    width: 84px; padding: 4px 8px;
+    border: 1px solid #d1d5db; border-radius: 6px;
+    font-size: 13px; background: #fff; color: #111827;
+  }
+  .options .num:focus {
+    outline: none; border-color: #ea580c;
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.15);
+  }
+
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .presets .lbl { font-size: 13px; color: #6b7280; align-self: center; margin-right: 4px; }
+  .preset {
+    padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 999px;
+    background: #f9fafb; color: #374151; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .preset:hover { border-color: #ea580c; color: #c2410c; background: #fff7ed; }
+  .preset:active { transform: translateY(1px); }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; align-items: center; }
+  button {
+    padding: 10px 18px;
+    border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: transform .05s, background .15s;
+  }
+  button:active { transform: translateY(1px); }
+  #genBtn   { background: #ea580c; color: #fff; }
+  #genBtn:hover   { background: #c2410c; }
+  #copyBtn  { background: #059669; color: #fff; }
+  #copyBtn:hover  { background: #047857; }
+  #clearBtn { background: #f3f4f6; color: #6b7280; }
+  #clearBtn:hover { background: #e5e7eb; }
+
+  .textarea-box {
+    width: 100%; min-height: 120px;
+    padding: 14px;
+    border: 1px solid #d1d5db; border-radius: 10px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    font-size: 13px; line-height: 1.5;
+    resize: vertical;
+    background: #f9fafb; color: #111827;
+    white-space: pre; overflow-wrap: normal; overflow-x: auto;
+  }
+  .textarea-box:focus {
+    outline: none; border-color: #ea580c; background: #fff;
+    box-shadow: 0 0 0 3px rgba(234,88,12,0.15);
+  }
+  .textarea-box:empty::before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+  }
+
+  #stats { margin-top: 8px; font-size: 13px; color: #6b7280; min-height: 18px; }
+  #stats.ok { color: #059669; font-weight: 600; }
+  #stats.err { color: #dc2626; font-weight: 600; }
+
+  .bits-line {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin: 0 0 16px; padding: 8px 14px;
+    border-radius: 8px; background: #fff7ed; font-size: 13px; color: #9a3412;
+  }
+  .bits-line code {
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+    background: #ffedd5; padding: 1px 6px; border-radius: 4px; font-weight: 600;
+  }
+
+  .hint { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb;
+    font-size: 12px; color: #9ca3af; line-height: 1.6; }
+  .hint b { color: #6b7280; }
+  .hint code {
+    background: #f3f4f6; padding: 1px 5px; border-radius: 4px;
+    font-family: "SF Mono", "Fira Code", Consolas, monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Генератор случайных строк <code>Hex</code> / <code>Base64</code></h1>
+    <p class="subtitle">
+      Криптографически случайные строки на основе <code>crypto.getRandomValues()</code>.
+      Длина задаётся в байтах; результат превращается в <b>Hex</b> (lower/upper),
+      <b>Base64</b> или <b>Base64 URL-safe</b>. Можно генерировать партиями.
+      Всё выполняется локально в браузере, ничего никуда не отправляется.
+    </p>
+
+    <div class="modes">
+      <label><input type="radio" name="mode" value="hex" checked> Hex (нижний регистр)</label>
+      <label><input type="radio" name="mode" value="hexup"> Hex (верхний регистр)</label>
+      <label><input type="radio" name="mode" value="b64"> Base64</label>
+      <label><input type="radio" name="mode" value="b64url"> Base64 URL-safe</label>
+    </div>
+
+    <div class="options">
+      <label>
+        Длина (байты):
+        <input type="number" id="bytes" class="num" min="1" max="1048576" value="32">
+      </label>
+      <label id="paddingLabel"><input type="checkbox" id="padding" checked> Base64: padding (<code>=</code>)</label>
+      <label>
+        Количество строк:
+        <input type="number" id="count" class="num" min="1" max="1000" value="1">
+      </label>
+    </div>
+
+    <div class="presets">
+      <span class="lbl">Быстрые размеры:</span>
+      <button class="preset" data-bytes="16">16 Б (128 бит)</button>
+      <button class="preset" data-bytes="32">32 Б (256 бит)</button>
+      <button class="preset" data-bytes="64">64 Б (512 бит)</button>
+      <button class="preset" data-bytes="256">256 Б (2048 бит)</button>
+    </div>
+
+    <div class="bits-line" id="bitsLine"></div>
+
+    <div class="actions">
+      <button id="genBtn">Сгенерировать</button>
+      <button id="copyBtn">Копировать</button>
+      <button id="clearBtn">Сбросить</button>
+    </div>
+
+    <div class="panel">
+      <label class="field" for="output">Результат</label>
+      <textarea id="output" readonly spellcheck="false" class="textarea-box" data-placeholder="Здесь появятся сгенерированные строки..."></textarea>
+      <div id="stats"></div>
+    </div>
+
+    <div class="hint">
+      <b>Байты → символы</b>: hex даёт ровно <code>2 × байты</code> символов,
+      base64 — <code>ceil(байты / 3) × 4</code> (без padding на 1–2 символа меньше).<br>
+      <b>URL-safe</b> заменяет <code>+</code> и <code>/</code> на <code>-</code> и <code>_</code> — строка безопасна в URL и именах файлов.<br>
+      Случайность — <code>crypto.getRandomValues()</code> (CSPRNG браузера), байты читаются блоками по 64 КБит, так что длина до 1 МБ работоспособна без потери корректности.
+    </div>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  var bytesInput = document.getElementById('bytes');
+  var countInput = document.getElementById('count');
+  var paddingCheck = document.getElementById('padding');
+  var paddingLabel = document.getElementById('paddingLabel');
+  var output = document.getElementById('output');
+  var stats = document.getElementById('stats');
+  var bitsLine = document.getElementById('bitsLine');
+
+  var lastStrings = null;
+
+  function setStats(message, ok) {
+    stats.textContent = message;
+    stats.className = ok === true ? 'ok' : (message ? 'err' : '');
+  }
+
+  function mode() {
+    var checked = document.querySelector('input[name="mode"]:checked');
+    return checked ? checked.value : 'hex';
+  }
+
+  function syncUi() {
+    var m = mode();
+    var isB64 = (m === 'b64' || m === 'b64url');
+    paddingLabel.hidden = !isB64;
+    var bytes = clampBytes(parseInt(bytesInput.value, 10));
+    var bits = bytes * 8;
+    var len;
+    if (m === 'hex' || m === 'hexup') {
+      len = bytes * 2;
+    } else {
+      len = Math.ceil(bytes / 3) * 4;
+      if (!paddingCheck.checked) len -= (3 - bytes % 3) % 3;
+    }
+    bitsLine.innerHTML = 'Сейчас: <code>' + bytes + ' байт</code> = <code>' + bits + ' бит</code> → строка <code>' + len + ' символов</code> в режиме ' + escHtml(labelFor(m));
+  }
+
+  function labelFor(m) {
+    if (m === 'hex') return 'hex (lower)';
+    if (m === 'hexup') return 'hex (UPPER)';
+    if (m === 'b64url') return 'base64url';
+    return 'base64';
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function clampBytes(n) {
+    if (isNaN(n) || n < 1) return 1;
+    if (n > 1048576) return 1048576;
+    return n;
+  }
+
+  function clampCount(n) {
+    if (isNaN(n) || n < 1) return 1;
+    if (n > 1000) return 1000;
+    return n;
+  }
+
+  function randomBytes(n) {
+    var buf = new Uint8Array(n);
+    var CH = 0xFFFF;
+    for (var off = 0; off < n; off += CH) {
+      crypto.getRandomValues(buf.subarray(off, Math.min(n, off + CH)));
+    }
+    return buf;
+  }
+
+  function bytesToHex(buf, upper) {
+    var out = '';
+    for (var i = 0; i < buf.length; i++) {
+      var h = buf[i].toString(16);
+      if (h.length < 2) h = '0' + h;
+      out += h;
+    }
+    return upper ? out.toUpperCase() : out;
+  }
+
+  function bytesToBase64(buf, urlSafe, withPadding) {
+    var bin = '';
+    var CH = 0x8000;
+    for (var i = 0; i < buf.length; i += CH) {
+      bin += String.fromCharCode.apply(null, buf.subarray(i, Math.min(buf.length, i + CH)));
+    }
+    var b64 = btoa(bin);
+    if (urlSafe) b64 = b64.replace(/\+/g, '-').replace(/\//g, '_');
+    if (!withPadding) b64 = b64.replace(/=+$/, '');
+    return b64;
+  }
+
+  function generateOne(bytes) {
+    var m = mode();
+    var raw = randomBytes(bytes);
+    if (m === 'hex' || m === 'hexup') {
+      return bytesToHex(raw, m === 'hexup');
+    }
+    return bytesToBase64(raw, m === 'b64url', paddingCheck.checked);
+  }
+
+  function generate(n) {
+    var bytes = clampBytes(parseInt(bytesInput.value, 10));
+    var out = [];
+    for (var i = 0; i < n; i++) out.push(generateOne(bytes));
+    lastStrings = out;
+    output.value = out.join('\n');
+    setStats('Сгенерировано: ' + n + ' строк × ' + bytes + ' байт (' + bytes * 8 + ' бит). Режим: ' + labelFor(mode()), true);
+    return out;
+  }
+
+  function copyAll() {
+    if (!lastStrings || !lastStrings.length) { setStats('Сначала сгенерируй строки', false); return; }
+    var text = lastStrings.join('\n');
+    var done = function () { setStats('Скопировано в буфер обмена (' + lastStrings.length + ' строк)', true); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () {
+        output.select();
+        document.execCommand('copy');
+        done();
+      });
+    } else {
+      output.select();
+      document.execCommand('copy');
+      done();
+    }
+  }
+
+  document.getElementById('genBtn').addEventListener('click', function () {
+    generate(clampCount(parseInt(countInput.value, 10)));
+  });
+  document.getElementById('copyBtn').addEventListener('click', copyAll);
+  document.getElementById('clearBtn').addEventListener('click', function () {
+    output.value = '';
+    lastStrings = null;
+    setStats('');
+  });
+
+  document.querySelectorAll('.preset').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      bytesInput.value = btn.getAttribute('data-bytes');
+      syncUi();
+    });
+  });
+
+  function onUiChange() {
+    syncUi();
+    setStats('');
+    lastStrings = null;
+  }
+  document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+    r.addEventListener('change', onUiChange);
+  });
+  bytesInput.addEventListener('input', syncUi);
+  bytesInput.addEventListener('change', syncUi);
+  countInput.addEventListener('change', syncUi);
+  paddingCheck.addEventListener('change', syncUi);
+
+  output.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      generate(clampCount(parseInt(countInput.value, 10)));
+    }
+  });
+
+  syncUi();
+  generate(1);
+})();
+</script>
+</body>
+</html>
